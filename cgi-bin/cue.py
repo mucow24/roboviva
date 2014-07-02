@@ -1,5 +1,97 @@
 import csv
 
+
+# UGCS Doesn't have newer python versions, so we roll-our-own enums, here:
+def _enum(**enums):
+  return type('Enum', (), enums)
+
+'''The action a particular cue entry represents'''
+class Instruction:
+
+  Type = enum(LEFT        = "L",
+              RIGHT       = "R",
+              STRAIGHT    = "S",
+              PIT         = "PIT",
+              DANGER      = "!",
+              CROSSES     = "X")
+
+  def __init__(self, instruction_type, is_quick=False, is_slight=False):
+    self._instruction_type = instruction_type
+    self._is_quick         = is_quick
+    self._is_slight        = is_slight
+
+  @property
+  def is_quick(self):
+    return self._is_quick
+
+  @property
+  def is_slight(self):
+    return self._is_slight
+
+  @is_quick.setter
+  def is_quick(self, is_quick):
+    self._is_quick = is_quick
+
+  @is_slight.setter
+  def is_slight(self, is_slight):
+    self._is_slight = is_slight
+
+  def __repr__(self):
+    rep = self._instruction_type
+    if self._is_quick:
+      rep = "Q" + rep
+
+    if self._is_slight:
+      rep = "B" + rep
+    return rep
+
+  def __str__(self):
+    rep = self._instruction_type
+    # We don't want "QBR" -- we assume 'quick' is more important than 'slight',
+    # here:
+    rep = self._instruction_type
+    if rep in ("L", "R"):
+      if self._is_quick:
+        rep = "Q" + rep
+      elif self._is_slight:
+        rep = "B" + rep
+    return rep
+
+class CueEntry(object):
+  '''Simple storage class representing a single cue sheet entry. Nothing fancy.'''
+  def __init__(self, instruction, description, absolute_distance, note=""):
+    ''' Inits a CueEntry.
+        instruction       - The entry's Instruction (see above)
+        description       - The entry's 'action' (e.g., 'Turn right on Pine St')
+        absolute_distance - How far this entry is from the ride's start (miles)
+        note              - Optional. Any additional notes on this entry.
+    '''
+    self._instruction       = instruction
+    self._description       = description
+    self._absolute_distance = float(absolute_distance)
+    self._note = note
+
+  @property
+  def instruction(self):
+    return self._instruction
+
+  @property
+  def description(self):
+    return self._description
+
+  @property
+  def absolute_distance(self):
+    return self._absolute_distance
+
+  @property
+  def note(self):
+    return self._note
+
+  def __repr__(self):
+    return "CueEntry[%3s | %3.2f | %s | %s]" %
+        (self._instruction, self._absolute_distance, self._description, self._note)
+
+
 LatexHeader = r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
