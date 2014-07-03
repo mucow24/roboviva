@@ -26,6 +26,18 @@ body {
   text-align: center;
 }
 
+.outer {
+  display:  table;
+  position: absolute;
+  height:   100%;
+  width:    100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+
 input[type=text] {
   border-radius: 50px; 
   padding: 5px;
@@ -93,6 +105,7 @@ input[type=text] {
   .main-text {
     font-size: 34px;
     text-align: center;
+    line-height:60px;
   }
   input {
     font-size:34px;
