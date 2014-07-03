@@ -22,11 +22,8 @@ def getMd5AndCueSheet(route_id):
   raw_csv = ""
   try:
     raw_csv = urllib2.urlopen(url, timeout=5).read()
-  except HTTPError as e:
-    if e.code is 404:
-      raise RideWithGpsError("Invalid Route ID")
-    else:
-      raise RideWithGpsError(e.reason)
+  except urllib2.HTTPError as e:
+    raise RideWithGpsError("Unknown Route ID: %s" % route_id)
 
   # Compute raw csv MD5:
   md5 = hashlib.md5(raw_csv).hexdigest()

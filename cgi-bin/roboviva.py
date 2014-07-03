@@ -19,6 +19,7 @@ def servePDF(pdffilename):
 
 def htmlError(error_html):
   sys.stdout.write("Content-type: text/html\r\n\r\n"
+                    + "<h1>Robo-Error!</h1><br>"
                     + error_html.replace("\n", "<br>"))
       
 cgitb.enable()
@@ -33,7 +34,13 @@ if not route_id.isalnum():
   htmlError("Invalid route id: " + cgi.escape(route_id))
   sys.exit(1)
 
-md5_hash, cue_entries = ridewithgps.getMd5AndCueSheet(route_id)
+md5_hash = None
+cue_entries = None
+try:
+  md5_hash, cue_entries = ridewithgps.getMd5AndCueSheet(route_id)
+except ridewithgps.RideWithGpsError as e:
+  htmlError("Error querying RideWithGPS: %s" % e)
+  sys.exit(1)
 
 basefilename = "%s-%s" % (route_id, md5_hash)
 pdffilename  = basefilename + ".pdf"

@@ -24,7 +24,7 @@ def entryToLatex(entry):
                                                                entry.modifier + entry.instruction,
                                                                entry.absolute_distance,
                                                                entry.description,
-                                                               entry.note,
+                                                               note_str,
                                                                for_str)
 
 def makeLatex(ents):
@@ -33,7 +33,6 @@ def makeLatex(ents):
   '''
   ret = LatexHeader
   for ent in ents:
-    print ent
     ret = ret + entryToLatex(ent) + "\n"
   ret = ret + LatexFooter
   return ret
