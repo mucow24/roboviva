@@ -6,17 +6,17 @@ def entryToLatex(entry):
   # Figure out row color:
   color = None
   if (entry.instruction in (cue.Instruction.DANGER, cue.Instruction.PIT)) or entry.note:
-    color = r'{yellow}'
+    color = ur'{yellow}'
   elif entry.instruction == cue.Instruction.LEFT:
-    color = r'[gray]{0.7}'
+    color = ur'[gray]{0.7}'
 
   color_str = ""
   note_str  = ""
   for_str   = ""
   if color:
-    color_str = r'\rowcolor%s' % color
+    color_str = ur'\rowcolor%s' % color
   if entry.note:
-    note_str = r' \newline \textbf{Note:} %s' % entry.note
+    note_str = ur' \newline \textbf{Note:} %s' % entry.note
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
@@ -38,7 +38,7 @@ def makeLatex(ents):
   ret = ret + LatexFooter
   return ret
 
-LatexHeader = r'''
+LatexHeader = unicode(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
 \geometry{letterpaper} 
@@ -58,10 +58,10 @@ LatexHeader = r'''
         \hline
         \rowcolor[gray]{0}
         \textbf{\textcolor{white}{Go}}&\textbf{\textcolor{white}{At}}&\textbf{\textcolor{white}{On}}&\textbf{\textcolor{white}{For}}\\\hline
-'''
+''')
 
-LatexFooter = r'''
+LatexFooter = unicode(r'''
 \end{supertabular}
 \end{document} 
-'''
+''')
 

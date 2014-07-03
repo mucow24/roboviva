@@ -8,7 +8,7 @@ class RideWithGpsError(Exception):
   '''Thrown by getCueSheet() in the event of an error'''
   pass
 
-def getCueSheet(route_id):
+def getMd5AndCueSheet(route_id):
   '''
       Queries RideWithGPS, and returns a list of CueEntrys, along with the MD5
       checksum of the raw CSV data that generated it.
@@ -49,7 +49,7 @@ def getCueSheet(route_id):
     rows[i - 1]['for_distance'] = rel_dist
     distance_so_far             = float(row['absolute_distance']) 
   # [1:] to skip header line
-  return [csvRowToCueEntry(row) for row in rows[1:]]
+  return (md5, [csvRowToCueEntry(row) for row in rows[1:]])
   
 
 
