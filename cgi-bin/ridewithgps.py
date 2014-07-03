@@ -28,28 +28,30 @@ def getMd5AndCueSheet(route_id):
   # Compute raw csv MD5:
   md5 = hashlib.md5(raw_csv).hexdigest()
   
-  # Process CSV rows:
+  # Read in CSV rows:
   reader = csv.DictReader(raw_csv.split("\n"),
                           ['type', 'note', 'absolute_distance', 'elevation', 'description'])
   rows   = [row for row in reader]
+  rows   = rows[1:] # Prune header
 
-  # Compute "for" distances:
-  distance_so_far = 0.0
-  cue_rows = []
+  # Augment the rows:
+  # We need to figure out for_distances, as well as if a particular entry is
+  # 'quick'; we do this by augmenting the row with the absolute distance of the
+  # prior instruction (or None if this is the first instruction) and the next
+  # instruction (or None if this is the last). We'll use these when converting
+  # to the cue.Entry.
   for i, row in enumerate(rows):
-    row['for_distance'] = None
-    if i is 0 or i is 1:
-      # Header row or start of route, skip entirely.
-      continue
-    # On >= second instruction
-    rel_dist                    = float(row['absolute_distance']) - distance_so_far
-    rows[i - 1]['for_distance'] = rel_dist
-    distance_so_far             = float(row['absolute_distance']) 
-  # [1:] to skip header line
-  return (md5, [csvRowToCueEntry(row) for row in rows[1:]])
-  
+    row["prev_absolute_distance"] = None
+    row["next_absolute_distance"] = None
 
+    if i is 0:
+      continue # Start of route, skip this
 
+    # Fill in prev/next distances
+    rows[i - 1]['next_absolute_distance'] = row['absolute_distance']
+    row['prev_absolute_distance']         = rows[i - 1]['absolute_distance']
+
+  return (md5, [csvRowToCueEntry(row) for row in rows])
 
 def cleanDescription(description):
   ''' 
@@ -76,18 +78,22 @@ def csvRowToCueEntry(csv_row):
   '''Converts a ridewithgps CSV row into a cue.CueEntry. Assumes the following CSV layout:
      type,note,distance,elevation,description
 
-     With the following mapping:
-     type              -> instruction
-     note              -> description
-     absolute_distance -> absolute_distance
-     for_distance      -> for_distance (Can be 'None')
-     description       -> notes
+     'csv_row' should be of dictionary type, with the following key -> value mappings:
+     type                   -> instruction
+     note                   -> description
+     absolute_distance      -> absolute_distance
+     next_absolute_distance -> (the abs distance of the next instruction, or None)
+     prev_absolute_distance -> (the abs distance of the prev instruction, or None)
+     description            -> notes
   '''
   instruction_str = csv_row['type']
   description     = csv_row['note']
   distance        = float(csv_row['absolute_distance'])
   notes           = csv_row['description']
-  for_distance    = csv_row['for_distance']
+  for_distance    = None
+
+  if csv_row['next_absolute_distance']:
+    for_distance = float(csv_row['next_absolute_distance']) - distance
 
   # Figure out the (base) instruction:
   instruction = None
@@ -114,9 +120,11 @@ def csvRowToCueEntry(csv_row):
     # indicate slight turns:
     if re.match("^(Keep|Bear|Slight) ", description):
       modifier = cue.Modifier.SLIGHT
-    elif csv_row['for_distance'] and csv_row['for_distance'] < 0.1:
-      # Call it "quick"
-      modifier = cue.Modifier.QUICK
+    elif csv_row['prev_absolute_distance']:
+      # If this instruction is < 0.1 miles from the prior one, call it 'quick':
+      dist_from_prev = distance - float(csv_row['prev_absolute_distance'])
+      if dist_from_prev < 0.1:
+        modifier = cue.Modifier.QUICK
 
   return cue.Entry(instruction,
                    cleanDescription(description),
