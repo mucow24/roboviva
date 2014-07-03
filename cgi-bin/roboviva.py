@@ -55,7 +55,6 @@ if not dataExists(pdffilename, base_dir):
   try:
     with open(pdffilename, 'wb') as pdffile:
       pdffile.write(tex.latex2pdf(latex))
-      sys.exit(0)
   except:
     htmlError("Error formatting latex!\n\n" + latex) 
     sys.exit(1)
