@@ -1,123 +1,59 @@
 import csv
-
-
-# UGCS Doesn't have newer python versions, so we roll-our-own enums, here:
-def _enum(**enums):
-  return type('Enum', (), enums)
+import enum
 
 '''The action a particular cue entry represents'''
-class Instruction:
+Instruction = enum.Enum(LEFT        = "L",
+                        RIGHT       = "R",
+                        STRAIGHT    = "S",
+                        PIT         = "PIT",
+                        DANGER      = "!",
+                        CROSSES     = "X",
+                        NONE        = "")
 
-  Type = enum(LEFT        = "L",
-              RIGHT       = "R",
-              STRAIGHT    = "S",
-              PIT         = "PIT",
-              DANGER      = "!",
-              CROSSES     = "X")
+'''An instruction modifier. Only really makes sense for LEFT and RIGHT, at the moment'''
+Modifier = enum.Enum(NONE   = "",
+                     SLIGHT = "B",
+                     QUICK  = "Q")
 
-  def __init__(self, instruction_type, is_quick=False, is_slight=False):
-    self._instruction_type = instruction_type
-    self._is_quick         = is_quick
-    self._is_slight        = is_slight
-
-  @property
-  def is_quick(self):
-    return self._is_quick
-
-  @property
-  def is_slight(self):
-    return self._is_slight
-
-  @is_quick.setter
-  def is_quick(self, is_quick):
-    self._is_quick = is_quick
-
-  @is_slight.setter
-  def is_slight(self, is_slight):
-    self._is_slight = is_slight
-
-  def __repr__(self):
-    rep = self._instruction_type
-    if self._is_quick:
-      rep = "Q" + rep
-
-    if self._is_slight:
-      rep = "B" + rep
-    return rep
-
-  def __str__(self):
-    rep = self._instruction_type
-    # We don't want "QBR" -- we assume 'quick' is more important than 'slight',
-    # here:
-    rep = self._instruction_type
-    if rep in ("L", "R"):
-      if self._is_quick:
-        rep = "Q" + rep
-      elif self._is_slight:
-        rep = "B" + rep
-    return rep
-
-class CueEntry(object):
+class Entry(object):
   '''Simple storage class representing a single cue sheet entry. Nothing fancy.'''
-  def __init__(self, instruction, description, absolute_distance, note=""):
+  def __init__(self, 
+              instruction,
+              description,
+              absolute_distance,
+              note         = "",
+              modifier     = Modifier.NONE,
+              for_distance = None):
     ''' Inits a CueEntry.
         instruction       - The entry's Instruction (see above)
         description       - The entry's 'action' (e.g., 'Turn right on Pine St')
         absolute_distance - How far this entry is from the ride's start (miles)
         note              - Optional. Any additional notes on this entry.
+        modifier          - Optional. A Modifier to apply to the Instruction.
+        for_distance      - Optional. How long from this entry to the next entry.
     '''
-    self._instruction       = instruction
-    self._description       = description
-    self._absolute_distance = float(absolute_distance)
-    self._note = note
-
-  @property
-  def instruction(self):
-    return self._instruction
-
-  @property
-  def description(self):
-    return self._description
-
-  @property
-  def absolute_distance(self):
-    return self._absolute_distance
-
-  @property
-  def note(self):
-    return self._note
+    self.instruction       = instruction
+    self.description       = description
+    self.absolute_distance = float(absolute_distance)
+    self.note              = note
+    self.modifier          = modifier
+    self.for_distance      = for_distance
 
   def __repr__(self):
-    return "CueEntry[%3s | %3.2f | %s | %s]" %
-        (self._instruction, self._absolute_distance, self._description, self._note)
+    for_str = ""
+    if self.for_distance:
+      for_str = "%5.2f" % self.for_distance
+    else:
+      for_str = "     "
+
+    return "Entry[%s%s | %5.2f | %s | %s | %s]" % (self.modifier, 
+                                                   self.instruction,
+                                                   self.absolute_distance,
+                                                   for_str,
+                                                   self.description,
+                                                   self.note)
 
 
-LatexHeader = r'''
-\documentclass[11pt]{article}
-\usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
-\geometry{letterpaper} 
-\usepackage{epstopdf}
-\usepackage{colortbl}
-\usepackage{supertabular}
-\usepackage{helvet}
-
-\renewcommand{\familydefault}{\sfdefault}
-
-\begin{document}
-  \twocolumn
-    \tabletail{\hline}
-      \tablelasttail{\hline}
-        \begin{supertabular}{|p{0.25in}|p{0.35in}|p{2.25in}|l|}
-
-        \hline
-        \rowcolor[gray]{0}
-        \textbf{\textcolor{white}{Go}}&\textbf{\textcolor{white}{At}}&\textbf{\textcolor{white}{On}}&\textbf{\textcolor{white}{For}}\\\hline
-'''
-
-LatexFooter = r'''
-\end{supertabular}
-\end{document} 
-'''
 
 def processRows(csv_line_array):
   rows = []
@@ -174,18 +110,6 @@ def processRows(csv_line_array):
     row['type'] = typ
   
     # Remove extraneous infro from notes:
-    row['note'] = row['note'].replace("Slight left toward", "")
-    row['note'] = row['note'].replace("Slight right toward ", "")
-    row['note'] = row['note'].replace("Slight left onto ", "")
-    row['note'] = row['note'].replace("Slight right onto ", "")
-    row['note'] = row['note'].replace("Turn left onto ", "")
-    row['note'] = row['note'].replace("Turn right onto ", "")
-    row['note'] = row['note'].replace("Slight left to stay on ", "TRO ")
-    row['note'] = row['note'].replace("Slight right to stay on ", "TRO ")
-    row['note'] = row['note'].replace("Turn left to stay on ", "TRO ")
-    row['note'] = row['note'].replace("Turn right to stay on ", "TRO ")
-    row['note'] = row['note'].replace("Keep left to stay on ", "TRO ")
-    row['note'] = row['note'].replace("Keep right to stay on ", "TRO ")
     row['note'] = row['note'].replace("At the traffic circle, ", "@ Circle, ") 
     row['note'] = row['note'].replace("Keep right at the fork", "At fork") 
     row['note'] = row['note'].replace("Keep left at the fork", "At fork") 
