@@ -72,6 +72,7 @@ def cleanDescription(description):
   description = re.sub("^(Left|Right) onto ",                          "",         description)
   description = re.sub("^Continue onto ",                              "",         description)
   description = re.sub("^Continue straight onto ",                     "",         description)
+  description = re.sub(">",                                            "$\Rightarrow$", description)
   return description
 
 def csvRowToCueEntry(csv_row):
@@ -107,7 +108,7 @@ def csvRowToCueEntry(csv_row):
     instruction = cue.Instruction.PIT
   elif instruction_str == "Danger":
     instruction = cue.Instruction.DANGER
-  elif instruction_str in ("Start", "End"):
+  elif instruction_str in ("Start", "End", "Generic", "Summit"):
     instruction = cue.Instruction.NONE
   else:
     # Just punt to whatever they gave us:
