@@ -1,6 +1,6 @@
 import cue
 
-def entryToLatex(entry):
+def _entryToLatex(entry):
   '''Converts a cue.Entry into a latex supertabular row string'''
   
   # Figure out row color:
@@ -33,7 +33,7 @@ def makeLatex(ents):
   '''
   ret = LatexHeader
   for ent in ents:
-    ret = ret + entryToLatex(ent) + "\n"
+    ret = ret + _entryToLatex(ent) + "\n"
   ret = ret + LatexFooter
   return ret
 
