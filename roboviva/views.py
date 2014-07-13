@@ -3,7 +3,6 @@ import flask
 import roboviva.ridewithgps
 import roboviva.latex
 import roboviva.tex
-import roboviva.simplecache
 
 import os
 
