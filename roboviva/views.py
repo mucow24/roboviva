@@ -15,10 +15,8 @@ def handle_request(route_id):
   try:
     md5_hash, cue_entries = roboviva.ridewithgps.getMd5AndCueSheet(route_id)
   except:
-    print "bad route"
     return "Bad route: %s" % route_id
 
-  print "good route" 
   # check the pdf cache to see if we already have this:
   cache_dir = flask.current_app.config['PDF_CACHE_DIR']
 
