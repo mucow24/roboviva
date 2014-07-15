@@ -1,6 +1,6 @@
 function doViva() {
   var value = document.getElementById("routebox").value;
-  var url = "http://ugcs.caltech.edu/~mucow/cgi-bin/roboviva.py?routeid=" + value;
+  var url = "routes/" + value;
   window.open(url, "_blank");
 }
 
