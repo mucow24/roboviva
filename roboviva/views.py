@@ -93,6 +93,9 @@ def handle_request(route_id):
 def get_pdf(route_id):
   cache_dir = flask.current_app.config['PDF_CACHE_DIR']
   pdf_filename = "%s.pdf" % (route_id)
+  pdf_filepath = os.path.join(cache_dir, pdf_filename)
+  if not os.path.exists(pdf_filepath):
+    return flask.render_template('regen.html', route_id = route_id)
   return flask.send_from_directory(
       cache_dir,
       pdf_filename,

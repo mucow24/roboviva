@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Robo-404!</title>
+  <style type='text/css'>
+.stripe {
+  display: block;
+  background-color: #01d4ff;
+  border: 0;
+  outline: 0;
+  height: 25px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+.main {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  margin: 20px;
+  padding: 10px;
+  text-align: center;
+  font-size: 32px;
+}
+
+a:link {
+  color: #00DFD2;
+}
+
+a:visited {
+  color: #00DFD2;
+}
+
+a:active: {
+  color: #FF202D;
+}
+
+.outer {
+  display:  table;
+  position: absolute;
+  height:   100%;
+  width:    100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+</style>
+</head>
+
+<body style='background: black; color: white'>
+  <div class="outer">
+  <div class="middle">
+    <div class="stripe" style="background-color:#0114CE"></div>
+    <div class="stripe" style="background-color:#0159FF"></div>
+    <div class="stripe" style="background-color:#00DED1"></div>
+    <div class="main">
+      <span class="main-text">
+        Uh-oh! The PDF for route #{{route_id}} doesn't exist! <br>
+        <a href="{{ url_for('roboviva.handle_request', route_id=route_id) }}">Make it again?</a>
+      </span>
+    </div>
+    <div class="stripe" style="background-color:#4C2B18"></div>
+    <div class="stripe" style="background-color:#A85329"></div>
+    <div class="stripe" style="background-color:#FFB372"></div>
+  </div>
+  </div>
+</body>
+</html>
