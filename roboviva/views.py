@@ -24,10 +24,9 @@ def handle_request(route_id):
   # regenerating the PDF.
   try:
     md5_hash, cue_entries = roboviva.ridewithgps.getMd5AndCueSheet(route_id)
-  except roboviva.ridewithgps.RideWithGPSError as e:
+  except roboviva.ridewithgps.RideWithGpsError as e:
     log.warning("[request][%10d]: RideWithGPS error: %s", route_id, e)
-    # TODO(mucow): Templated, clean errors
-    return "Bad route: %s" % route_id
+    return flask.render_template('error.html', error=("'%s' is not a valid RideWithGPS Route :(" % route_id))
 
 
   log.debug("[request][%10d]: GPS OK, md5 = %s", route_id, md5_hash)
@@ -58,8 +57,7 @@ def handle_request(route_id):
     except Exception as e:
       log.error("[request][%10d]: Error generating latex:\n cue:\n %s",
           route_id, cue_entries)
-      # TODO(mucow): Templated, clean errors
-      return "Error generating latex: %s\n entries:\n %s" % (e, cue_entries)
+      return flask.render_template('error.html', error=("{Guru Meditation: 0xBA}"))
 
     # Step four, render the pdf:
     try:
@@ -67,7 +65,7 @@ def handle_request(route_id):
     except Exception as e:
       log.error("[request][%10d]: Error generating PDF\n latex: \n %s\n error:\n%s",
           route_id, latex, e)
-      return "Error rendering Latex: %s" % (e)
+      return flask.render_template('error.html', error="{Guru Meditation: 0xFF}")
 
     # Step five, write it:
     cache_dir = flask.current_app.config['PDF_CACHE_DIR']
@@ -78,7 +76,7 @@ def handle_request(route_id):
         pdffile.write(roboviva.tex.latex2pdf(latex))
     except Exception as e:
       log.error("[request][%10d]: Error writing pdf to %s: %s", pdf_filepath, e)
-      return "Bummer! Error writing to PDF: %s" % (e)
+      return flask.render_template('error.html', error="{Guru Meditation: 0xCE}")
 
     # Update the hash db:
     hash_db[db_key] = (md5_hash, time.time())

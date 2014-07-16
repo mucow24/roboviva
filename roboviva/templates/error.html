@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Robo-Error!</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='robo.css') }}" >
+</head>
+
+<body style='background: black; color: white'>
+  <div class="outer">
+  <div class="middle">
+    <div class="stripe" style="background-color:#0114CE"></div>
+    <div class="stripe" style="background-color:#0159FF"></div>
+    <div class="stripe" style="background-color:#00DED1"></div>
+    <div class="main">
+      <span class="main-text">
+        Robo-error! <br>
+        {{ error }}
+      </span>
+    </div>
+    <div class="stripe" style="background-color:#4C2B18"></div>
+    <div class="stripe" style="background-color:#A85329"></div>
+    <div class="stripe" style="background-color:#FFB372"></div>
+  </div>
+  </div>
+</body>
+</html>
