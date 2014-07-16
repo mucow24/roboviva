@@ -9,7 +9,7 @@ def _escape(text):
   ret = ret.replace("$", "\$")
   ret = ret.replace("|", r'$|$')
   ret = ret.replace("<", r'$<$')
-  ret = ret.replace(">", r'$>$')
+  ret = ret.replace(">", r'$\Rightarrow$')
   print ret
   return ret
 
