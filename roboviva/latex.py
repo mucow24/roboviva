@@ -1,5 +1,18 @@
 import cue
 
+def _escape(text):
+  ''' Escapes &, #, and other characters in 'text' so they don't break the latex
+  render. For now, \ is NOT escaped, in case you really need an integral in
+  your cue sheet'''
+  ret = text.replace("#", "\#")
+  ret = ret.replace("&", "\&")
+  ret = ret.replace("$", "\$")
+  ret = ret.replace("|", r'$|$')
+  ret = ret.replace("<", r'$<$')
+  ret = ret.replace(">", r'$>$')
+  print ret
+  return ret
+
 def _entryToLatex(entry):
   '''Converts a cue.Entry into a latex supertabular row string'''
   
@@ -23,8 +36,8 @@ def _entryToLatex(entry):
   return r"%s \textbf{%s} & %5.1f & %s%s & %s \\ \hline" % (color_str,
                                                                entry.modifier + entry.instruction,
                                                                entry.absolute_distance,
-                                                               entry.description,
-                                                               note_str,
+                                                               _escape(entry.description),
+                                                               _escape(note_str),
                                                                for_str)
 
 def makeLatex(ents):
