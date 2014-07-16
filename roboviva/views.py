@@ -75,7 +75,7 @@ def handle_request(route_id):
       with open(pdf_filepath, 'wb') as pdffile:
         pdffile.write(roboviva.tex.latex2pdf(latex))
     except Exception as e:
-      log.error("[request][%10d]: Error writing pdf to %s: %s", pdf_filepath, e)
+      log.error("[request][%10d]: Error writing pdf to %s: %s", route_id, pdf_filepath, e)
       return flask.render_template('error.html', error="{Guru Meditation: 0xCE}")
 
     # Update the hash db:
