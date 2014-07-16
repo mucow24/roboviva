@@ -27,6 +27,11 @@ def handle_request(route_id):
   except roboviva.ridewithgps.RideWithGpsError as e:
     log.warning("[request][%10d]: RideWithGPS error: %s", route_id, e)
     return flask.render_template('error.html', error=("'%s' is not a valid RideWithGPS Route :(" % route_id))
+  except Exception as e:
+    log.error("[request][%10d]: Other error: %s", route_id, e)
+    return flask.render_template('error.html',
+                                 error = 'Error querying RideWithGPS',
+                                 meditation = '{Guru Meditation: 0xFA}')
 
 
   log.debug("[request][%10d]: GPS OK, md5 = %s", route_id, md5_hash)
@@ -55,9 +60,11 @@ def handle_request(route_id):
     try:
       latex = roboviva.latex.makeLatex(cue_entries)
     except Exception as e:
-      log.error("[request][%10d]: Error generating latex:\n cue:\n %s",
-          route_id, cue_entries)
-      return flask.render_template('error.html', error=("{Guru Meditation: 0xBA}"))
+      log.error("[request][%10d]: Error generating latex: %s\n cue:\n %s",
+          route_id, e, cue_entries)
+      return flask.render_template('error.html',
+                                   error = "Internal Error :(",
+                                   meditation = "{Guru Meditation: 0xBA - Cue Parsing Failed}")
 
     # Step four, render the pdf:
     try:
@@ -65,7 +72,10 @@ def handle_request(route_id):
     except Exception as e:
       log.error("[request][%10d]: Error generating PDF\n latex: \n %s\n error:\n%s",
           route_id, latex, e)
-      return flask.render_template('error.html', error="{Guru Meditation: 0xFF}")
+      return flask.render_template(
+          'error.html',
+          error = "Internal Error :(",
+          meditation = "{Guru Meditation: 0xFF - Error Rendering PDF}")
 
     # Step five, write it:
     cache_dir = flask.current_app.config['PDF_CACHE_DIR']
@@ -76,7 +86,10 @@ def handle_request(route_id):
         pdffile.write(roboviva.tex.latex2pdf(latex))
     except Exception as e:
       log.error("[request][%10d]: Error writing pdf to %s: %s", route_id, pdf_filepath, e)
-      return flask.render_template('error.html', error="{Guru Meditation: 0xCE}")
+      return flask.render_template(
+          'error.html',
+          error = "Internal Error :(",
+          meditation = "{Guru Meditation: 0xCE - Error writing PDF}")
 
     # Update the hash db:
     hash_db[db_key] = (md5_hash, time.time())

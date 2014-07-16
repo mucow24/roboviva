@@ -1,6 +1,7 @@
 import cue
 import csv
 import urllib2
+import socket
 import hashlib
 import re
 
@@ -19,12 +20,21 @@ def getMd5AndCueSheet(route_id):
   '''
   url = "http://ridewithgps.com/routes/%s.csv" % route_id
 
-  raw_csv = ""
-  try:
-    raw_csv = urllib2.urlopen(url, timeout=5).read()
-  except urllib2.HTTPError as e:
-    raise RideWithGpsError("Unknown Route ID: %s" % route_id)
-
+  raw_csv      = None
+  Max_Attempts = 3
+  for n_tries in xrange(Max_Attempts):
+    try:
+      raw_csv = urllib2.urlopen(url, timeout = 5).read()
+      break
+    except urllib2.HTTPError as e:
+      # Probably a 404, so don't bother retrying
+      raise RideWithGpsError("Unknown Route ID: %s" % route_id)
+    except socket.timeout as e:
+      # Timeout, let this pass:
+      pass
+  if not raw_csv:
+    raise Exception("No data from RideWithGPS after %d tries" % Max_Attempts)
+      
   # Compute raw csv MD5:
   md5 = hashlib.md5(raw_csv).hexdigest()
   
