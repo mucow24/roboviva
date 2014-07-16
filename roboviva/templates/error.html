@@ -3,7 +3,40 @@
 <head>
   <meta charset="utf-8">
   <title>Robo-Error!</title>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='robo.css') }}" >
+  <style type='text/css'>
+.stripe {
+  display: block;
+  background-color: #01d4ff;
+  border: 0;
+  outline: 0;
+  height: 25px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+.main {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  margin: 20px;
+  padding: 10px;
+  text-align: center;
+  font-size: 32px;
+}
+
+.outer {
+  display:  table;
+  position: absolute;
+  height:   100%;
+  width:    100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+</style>
 </head>
 
 <body style='background: black; color: white'>
