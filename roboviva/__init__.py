@@ -9,7 +9,7 @@ import logging
 reload(sys)
 sys.setdefaultencoding("utf8")
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 app.register_blueprint(blueprint,
                        url_prefix="/roboviva")

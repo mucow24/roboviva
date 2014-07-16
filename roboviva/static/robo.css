@@ -6,6 +6,23 @@ body {
   color: #000000;
 }
 
+.body_error {
+  background-color: black;
+  color: white;
+}
+
+.body_error a:link {
+  color: #00DED1;
+}
+
+.body_error a:visited {
+  color: #00DED1;
+}
+
+.body_error a:active {
+  color: #FFB372;
+}
+
 .stripe {
   display: block;
   background-color: #01d4ff;

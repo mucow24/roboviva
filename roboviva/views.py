@@ -10,8 +10,11 @@ import logging
 import sys
 import time
 
-blueprint = flask.Blueprint("roboviva", __name__)
+blueprint = flask.Blueprint("roboviva", __name__, static_folder='static', static_url_path="")
 
+@blueprint.route('/')
+def index():
+  return flask.current_app.send_static_file('index.html')
 
 @blueprint.route('/routes/<int:route_id>')
 def handle_request(route_id):
