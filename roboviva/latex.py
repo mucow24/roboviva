@@ -10,6 +10,7 @@ def _escape(text):
   ret = ret.replace("|", r'$|$')
   ret = ret.replace("<", r'$<$')
   ret = ret.replace(">", r'$\Rightarrow$')
+  ret = ret.replace("%", r'\%')
   return ret
 
 def _entryToLatex(entry):
