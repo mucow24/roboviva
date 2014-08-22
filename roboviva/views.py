@@ -129,6 +129,18 @@ def dump_cache():
   ret += "</table>\n"
   return ret
 
+@blueprint.route('/cache/remove/<int:route_id>')
+def remove_route(route_id):
+  hash_db = flask.ext.shelve.get_shelve('c')
+  ret = ""
+  db_key = str(route_id)
+  if db_key in hash_db:
+    del hash_db[db_key]
+    ret = "%s removed from cache" % route_id
+  else:
+    ret = "%s not found in cache" % route_id
+  return ret
+
 @blueprint.route('/cache/purge/<int:delete_older_than>')
 def purge_cache(delete_older_than):
   log = flask.current_app.logger
