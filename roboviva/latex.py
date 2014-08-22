@@ -1,5 +1,25 @@
 import cue
 
+def _instructionToLatex(instruction, modifier):
+  '''Maps a cue.Instruction the latex that should be used to render it'''
+  if instruction == cue.Instruction.CAT_1:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{1}}$"
+  elif instruction == cue.Instruction.CAT_2:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{2}}$"
+  elif instruction == cue.Instruction.CAT_3:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{3}}$"
+  elif instruction == cue.Instruction.CAT_4:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{4}}$"
+  elif instruction == cue.Instruction.CAT_5:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{5}}$"
+  elif instruction == cue.Instruction.CAT_HC:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{HC}}$"
+  elif instruction == cue.Instruction.SUMMIT:
+    return r"$\boldsymbol{\nearrow}_\text{\textbf{END}}$"
+  else:
+    # all others can be rendered as-is, in bold:
+    return r"\textbf{" + modifier + instruction + "}"
+
 def _escape(text):
   ''' Escapes &, #, and other characters in 'text' so they don't break the latex
   render. For now, \ is NOT escaped, in case you really need an integral in
@@ -33,12 +53,13 @@ def _entryToLatex(entry):
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
-  return r"%s \textbf{%s} & %5.1f & %s%s & %s \\ \hline" % (color_str,
-                                                               entry.modifier + entry.instruction,
-                                                               entry.absolute_distance,
-                                                               _escape(entry.description),
-                                                               _escape(note_str),
-                                                               for_str)
+  instruction_str = _instructionToLatex(entry.instruction, entry.modifier)
+  return r"%s %s & %5.1f & %s%s & %s \\ \hline" % (color_str,
+                                                   instruction_str,
+                                                   entry.absolute_distance,
+                                                   _escape(entry.description),
+                                                   _escape(note_str),
+                                                   for_str)
 
 def makeLatex(ents):
   ''' Makes a full latex document from an array of cue.Entry's
@@ -57,8 +78,8 @@ LatexHeader = unicode(r'''
 \usepackage{epstopdf}
 \usepackage{colortbl}
 \usepackage{supertabular}
+\usepackage{amsmath}
 \usepackage{helvet}
-
 \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
