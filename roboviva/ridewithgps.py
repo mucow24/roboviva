@@ -117,8 +117,20 @@ def csvRowToCueEntry(csv_row):
     instruction = cue.Instruction.PIT
   elif instruction_str == "Danger":
     instruction = cue.Instruction.DANGER
-  elif instruction_str in ("Start", "End", "Generic", "Summit"):
+  elif instruction_str in ("Start", "End", "Generic"):
     instruction = cue.Instruction.NONE
+  elif instruction_str == "Summit":
+    instruction = cue.Instruction.SUMMIT
+  elif instruction_str == "4th Category":
+    instruction = cue.Instruction.CAT_4
+  elif instruction_str == "3rd Category":
+    instruction = cue.Instruction.CAT_3
+  elif instruction_str == "2nd Category":
+    instruction = cue.Instruction.CAT_2
+  elif instruction_str == "1st Category":
+    instruction = cue.Instruction.CAT_1
+  elif instruction_str == "Hors Category":
+    instruction = cue.Instruction.CAT_HC
   else:
     # Just punt to whatever they gave us:
     instruction = instruction_str

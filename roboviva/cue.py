@@ -8,7 +8,13 @@ Instruction = enum.Enum(LEFT        = "L",
                         PIT         = "PIT",
                         DANGER      = "!",
                         CROSSES     = "X",
-                        SUMMIT      = "",
+			CAT_HC      = "CHC",
+			CAT_1       = "C1",
+			CAT_2       = "C2",
+			CAT_3       = "C3",
+			CAT_4       = "C4",
+			CAT_5       = "C5",
+                        SUMMIT      = "^",
                         NONE        = "")
 
 '''An instruction modifier. Only really makes sense for LEFT and RIGHT, at the moment'''
