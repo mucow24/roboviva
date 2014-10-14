@@ -9,6 +9,22 @@ class RideWithGpsError(Exception):
   '''Thrown by getCueSheet() in the event of an error'''
   pass
 
+class RWGPS_Entry(object):
+  '''Simple storage class containing the RWGPS-provided data for a single cue entry'''
+  def __init__(self, 
+               instruction_str, 
+               description_str,
+               absolute_distance,
+               prev_absolute_distance,
+               next_absolute_distance,
+               note_str):
+   self.instruction_str = instruction_str 
+   self.description_str = description_str
+   self.absolute_distance = absolute_distance
+   self.prev_absolute_distance = prev_absolute_distance
+   self.next_absolute_distance = next_absolute_distance
+   self.note_str = note_str
+
 def getMd5AndCueSheet(route_id):
   '''
       Queries RideWithGPS, and returns a list of CueEntrys, along with the MD5
@@ -44,26 +60,13 @@ def getMd5AndCueSheet(route_id):
   rows   = [row for row in reader]
   rows   = rows[1:] # Prune header
 
-  # Augment the rows:
-  # We need to figure out for_distances, as well as if a particular entry is
-  # 'quick'; we do this by augmenting the row with the absolute distance of the
-  # prior instruction (or None if this is the first instruction) and the next
-  # instruction (or None if this is the last). We'll use these when converting
-  # to the cue.Entry.
-  for i, row in enumerate(rows):
-    row["prev_absolute_distance"] = None
-    row["next_absolute_distance"] = None
+  # Transform to RWGPS_Entry objects:
+  entries = _rawCSVtoRWGPS_Entries(rows)
 
-    if i is 0:
-      continue # Start of route, skip this
+  # And then to cue.Entry objects:
+  return (md5, [_RWGPS_EntryToCueEntry(entry) for entry in entries])
 
-    # Fill in prev/next distances
-    rows[i - 1]['next_absolute_distance'] = row['absolute_distance']
-    row['prev_absolute_distance']         = rows[i - 1]['absolute_distance']
-
-  return (md5, [csvRowToCueEntry(row) for row in rows])
-
-def cleanDescription(description):
+def _cleanDescription(description):
   ''' 
     Clean up the description.
 
@@ -73,84 +76,113 @@ def cleanDescription(description):
 
     description - the original ridewithgps description string, e.g. "Turn right onto Foo St."
   '''
-  description = re.sub("^At the traffic circle,",                     "@ Circle,", description)
-  description = re.sub("^(Slight|Turn) (left|right) (toward|onto) ",   "",         description)
-  description = re.sub("^(Slight|Turn|Keep) (left|right) to stay on",  "TRO",      description)
-  description = re.sub("to stay on",                                   "TRO",      description)
-  description = re.sub("to remain on",                                 "TRO",      description)
-  description = re.sub("^(Slight|Turn|Bear) (left|right) ",            "",         description)
-  description = re.sub("^(Left|Right) onto ",                          "",         description)
-  description = re.sub("^Continue onto ",                              "",         description)
-  description = re.sub("^Continue straight onto ",                     "",         description)
+  description = re.sub("^At the traffic circle,",                       "@ Circle,", description, flags=re.I)
+  description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) (toward|onto|on) ", "",description, flags=re.I)
+  description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) to stay on", "TRO",  description, flags=re.I)
+  description = re.sub("to stay on",                                       "TRO",  description, flags=re.I)
+  description = re.sub("to remain on",                                     "TRO",  description, flags=re.I)
+  description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) ",           "",     description, flags=re.I)
+  description = re.sub("^(Left|Right) onto ",                              "",     description, flags=re.I)
+  description = re.sub("^Continue onto ",                                  "",     description, flags=re.I)
+  description = re.sub("^Continue straight (onto|on) ",                         "",     description, flags=re.I)
   return description
 
-def csvRowToCueEntry(csv_row):
-  '''Converts a ridewithgps CSV row into a cue.CueEntry. Assumes the following CSV layout:
-     type,note,distance,elevation,description
-
-     'csv_row' should be of dictionary type, with the following key -> value mappings:
-     type                   -> instruction
-     note                   -> description
-     absolute_distance      -> absolute_distance
-     next_absolute_distance -> (the abs distance of the next instruction, or None)
-     prev_absolute_distance -> (the abs distance of the prev instruction, or None)
-     description            -> notes
-  '''
-  instruction_str = csv_row['type']
-  description     = csv_row['note']
-  distance        = float(csv_row['absolute_distance'])
-  notes           = csv_row['description']
-  for_distance    = None
-
-  if csv_row['next_absolute_distance']:
-    for_distance = float(csv_row['next_absolute_distance']) - distance
-
-  # Figure out the (base) instruction:
-  instruction = None
+def _instructionStrToCueInstruction(instruction_str):
+  '''Maps a RWGPS 'instruction' string to a cue.Instruction. If the instruction
+  string doesn't match a known one, the original instruction string is
+  returned'''
   if instruction_str == "Left":
-    instruction = cue.Instruction.LEFT
+    return cue.Instruction.LEFT
   elif instruction_str == "Right":
-    instruction = cue.Instruction.RIGHT
+    return cue.Instruction.RIGHT
   elif instruction_str == "Straight":
-    instruction = cue.Instruction.STRAIGHT
+    return cue.Instruction.STRAIGHT
   elif instruction_str in ("Food", "Water"):
-    instruction = cue.Instruction.PIT
+    return cue.Instruction.PIT
   elif instruction_str == "Danger":
-    instruction = cue.Instruction.DANGER
+    return cue.Instruction.DANGER
   elif instruction_str in ("Start", "End", "Generic"):
-    instruction = cue.Instruction.NONE
+    return cue.Instruction.NONE
   elif instruction_str == "Summit":
-    instruction = cue.Instruction.SUMMIT
+    return cue.Instruction.SUMMIT
   elif instruction_str == "4th Category":
-    instruction = cue.Instruction.CAT_4
+    return cue.Instruction.CAT_4
   elif instruction_str == "3rd Category":
-    instruction = cue.Instruction.CAT_3
+    return cue.Instruction.CAT_3
   elif instruction_str == "2nd Category":
-    instruction = cue.Instruction.CAT_2
+    return cue.Instruction.CAT_2
   elif instruction_str == "1st Category":
-    instruction = cue.Instruction.CAT_1
+    return cue.Instruction.CAT_1
   elif instruction_str == "Hors Category":
-    instruction = cue.Instruction.CAT_HC
+    return cue.Instruction.CAT_HC
   else:
     # Just punt to whatever they gave us:
-    instruction = instruction_str
+    return instruction_str
 
-  # See if we can apply any modifiers yet:
-  modifier = cue.Modifier.NONE
+def _getModifierFromRWGPSEntry(entry, quick_threshold_mi=0.1):
+  '''
+  Returns any cue.Modifier that might apply to a given RWGPS_Entry.
+  Returns the relevant modifier, or cue.Modifier.NONE if none apply.
+  'quick_threshold_mi' determines the distance, in miles, at which a turn is
+  marked as 'quick'
+  '''
+  instruction = _instructionStrToCueInstruction(entry.instruction_str)
   if instruction in (cue.Instruction.LEFT, cue.Instruction.RIGHT):
     # RWGPS will use the terms "Keep [left|right]" or "Bear [left|right]" to
     # indicate slight turns:
-    if re.match("^(Keep|Bear|Slight) ", description):
-      modifier = cue.Modifier.SLIGHT
-    elif csv_row['prev_absolute_distance']:
+    if re.match("^(Keep|Bear|Slight) ", entry.description_str):
+      return cue.Modifier.SLIGHT
+    elif entry.prev_absolute_distance:
       # If this instruction is < 0.1 miles from the prior one, call it 'quick':
-      dist_from_prev = distance - float(csv_row['prev_absolute_distance'])
+      dist_from_prev = entry.absolute_distance - entry.prev_absolute_distance
       if dist_from_prev < 0.1:
-        modifier = cue.Modifier.QUICK
+        return cue.Modifier.QUICK
+  # None apply.
+  return cue.Modifier.NONE
+
+def _rawCSVtoRWGPS_Entries(raw_csv_rows):
+  '''Converts an array of raw CSV rows, as provided by ridewithgps, and
+  converts them into an array of RWGPS_Entry objects. This assumes the first
+  entry in the array is the first cue entry, *not* the CSV header. Each row
+  should have been parsed into a python dictionary prior to calling this. 
+   
+  This assumes the following field mappings:
+  RWGPS Field Name:         Roboviva Field Name: 
+  type                   -> instruction_str
+  note                   -> description_str
+  absolute_distance      -> absolute_distance
+  description            -> note_str
+  '''
+  ret = []
+  for i, row in enumerate(raw_csv_rows):
+    ret.append(RWGPS_Entry(instruction_str = row['type'],
+                           description_str = row['note'],
+                           absolute_distance = float(row['absolute_distance']),
+                           prev_absolute_distance = None, # Will fill in in a moment
+                           next_absolute_distance = None, # Will fill in in a moment
+                           note_str               = row['description']))
+    # Fill prev/next abs distances:
+    if i > 0:
+      ret[i - 1].next_absolute_distance = ret[i].absolute_distance
+      ret[i].prev_absolute_distance = ret[i - 1].absolute_distance
+  return ret
+
+def _RWGPS_EntryToCueEntry(rwgps_entry):
+  '''
+  Converts a RWGPS_Entry into a cue.CueEntry.
+  '''
+
+  clean_desc  = _cleanDescription(rwgps_entry.description_str)
+  instruction = _instructionStrToCueInstruction(rwgps_entry.instruction_str)
+  modifier    = _getModifierFromRWGPSEntry(rwgps_entry)
+  
+  for_distance = None
+  if rwgps_entry.next_absolute_distance:
+    for_distance = rwgps_entry.next_absolute_distance - rwgps_entry.absolute_distance
 
   return cue.Entry(instruction,
-                   cleanDescription(description),
-                   distance,
-                   notes,
+                   clean_desc,
+                   rwgps_entry.absolute_distance,
+                   rwgps_entry.note_str,
                    modifier,
                    for_distance)
