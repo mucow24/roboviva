@@ -122,7 +122,6 @@ LatexHeader = unicode(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
 \geometry{letterpaper} 
-\usepackage{epstopdf}
 \usepackage{colortbl}
 \usepackage{supertabular}
 \usepackage{amsmath}

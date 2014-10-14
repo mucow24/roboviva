@@ -96,7 +96,7 @@ def handle_request(route_id):
 
     # Update the hash db:
     hash_db[db_key] = (md5_hash, time.time())
-  else:
+  else: # Have a PDF for this route + MD5 in the cache already
     log.info("[request][%10d]:  cached: %s (%d sec ago)",
         route_id, md5_hash, time.time() - old_time)
 
@@ -121,11 +121,21 @@ def get_pdf(route_id):
 @blueprint.route('/cache')
 def dump_cache():
   hash_db = flask.ext.shelve.get_shelve('c')
+  ents = [] 
+  for route_id in hash_db:
+    md5_sum, ts = hash_db[route_id]
+    ents.append( (ts, route_id, md5_sum) )
+
   ret  = "<table border=1>\n"
-  ret += "  <tr><th>route id</th><th>md5</th><th>age (s)</th></tr>\n"
-  for k in hash_db:
-    h, ts = hash_db[k]
-    ret += "  <tr><td>%s</td><td>%s</td><td>%d</td></tr>\n" % (k, h, time.time() - ts)
+  ret += "  <tr><th>route id</th><th>md5</th><th>age (s)</th><th>Remove?</th></tr>\n"
+  for timestamp, route_id, md5_sum in sorted(ents):
+    ret += "  <tr>\n"
+    ret += "    <td>%s</td>\n" % route_id
+    ret += "    <td>%s</td>\n" % md5_sum
+    ret += "    <td>%s seconds</td>\n" % (time.time() - timestamp)
+    ret += "    <td><a href=%s>Remove</a></td>\n" % (flask.url_for('roboviva.remove_route',
+                                                                    route_id = route_id))
+    ret += "  </tr>\n"
   ret += "</table>\n"
   return ret
 
