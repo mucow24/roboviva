@@ -1,64 +1,111 @@
 import cue
+import re
+  
+def _makeClimb(climb_type):
+  '''Very simple utility method -- provides a common way to specify climb types'''
+  return r"$\underset{\text{" + climb_type + r"}}{\boldsymbol{\nearrow}}$"
 
 def _instructionToLatex(instruction, modifier):
   '''Maps a cue.Instruction the latex that should be used to render it'''
   if instruction == cue.Instruction.CAT_1:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{1}}$"
+    return _makeClimb("1")
   elif instruction == cue.Instruction.CAT_2:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{2}}$"
+    return _makeClimb("2")
   elif instruction == cue.Instruction.CAT_3:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{3}}$"
+    return _makeClimb("3")
   elif instruction == cue.Instruction.CAT_4:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{4}}$"
+    return _makeClimb("4")
   elif instruction == cue.Instruction.CAT_5:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{5}}$"
+    return _makeClimb("5")
   elif instruction == cue.Instruction.CAT_HC:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{HC}}$"
+    return _makeClimb("HC")
   elif instruction == cue.Instruction.SUMMIT:
-    return r"$\boldsymbol{\nearrow}_\text{\textbf{END}}$"
+    return _makeClimb("END")
   else:
     # all others can be rendered as-is, in bold:
     return r"\textbf{" + modifier + instruction + "}"
 
 def _escape(text):
-  ''' Escapes &, #, and other characters in 'text' so they don't break the latex
-  render. For now, \ is NOT escaped, in case you really need an integral in
-  your cue sheet'''
-  ret = text.replace("#", "\#")
-  ret = ret.replace("&", "\&")
+  r''' Escapes &, #, and other characters in 'text' so they don't break the
+  latex render.'''
+  ret = re.sub(r'\\([^\\]?)', r'\\textbackslash \1', text)
   ret = ret.replace("$", "\$")
+  ret = ret.replace("#", "\#")
+  ret = ret.replace("&", "\&")
   ret = ret.replace("|", r'$|$')
   ret = ret.replace("<", r'$<$')
   ret = ret.replace(">", r'$\Rightarrow$')
   ret = ret.replace("%", r'\%')
+  ret = ret.replace('{', r'\{')
+  ret = ret.replace('}', r'\}')
   return ret
 
-def _entryToLatex(entry):
-  '''Converts a cue.Entry into a latex supertabular row string'''
-  
+def _format(text):
+  '''Looks for markdown-style *emphasis* and **strong emphasis** in the text,
+  turning it into \emph and \textbf, accordingly.'''
+
+  # Step 0: Escape any whitespace-delimited *'s and **'s:
+  text = re.sub(ur'\s\*\s', ur' \* ', text)
+  text = re.sub(ur'\s\**\s', ur' \*\* ', text)
+
+  # Do this in two passes. Each pass will replace **...** with \textbf{...},
+  # and *...* with \emph{...}, where "..." DOES NOT CONTAIN ANY NESTED **...**
+  # or *...* PATTERNS. We should do this to fixed point, but if people are
+  # seriously doing this:
+  # **Foo *bar **baz *foobar******
+  # Screw 'em :)
+
+  Num_Passes = 2
+  for p in xrange(Num_Passes):
+    text = re.sub(ur'(\*\*)(?!\s)((\\.|[^\\\*])*?[^\s\\])\1',
+                  ur'\\textbf{\2}',
+                  text)
+    text = re.sub(ur'\*(?!\s)((\\.|[^\\\*])*?[^\s\\*])\*',
+                  ur'\emph{\1}',
+                  text)
+  # Finally, un-escape any escaped *'s:
+  text = re.sub(ur'\\(\*|_)', ur'\1', text)
+  return text
+
+def _entryColor(entry):
+  '''Figures out what color, if any, this entry should have. Returns a color
+  string, if appropriate, or 'None' if this entry doesn't need to be
+  colored.'''
   # Figure out row color:
   color = None
-  if (entry.instruction in (cue.Instruction.DANGER, cue.Instruction.PIT)) or entry.note:
+  if (entry.instruction in (cue.Instruction.DANGER, cue.Instruction.PIT)):
     color = ur'{yellow}'
   elif entry.instruction == cue.Instruction.LEFT:
     color = ur'[gray]{0.7}'
+  return color
+  
+def _entryToLatex(entry):
+  '''Converts a cue.Entry into a latex supertabular row string'''
 
   color_str = ""
   note_str  = ""
   for_str   = ""
+  color = _entryColor(entry)
+
+  # Escape all user-provided strings:
+  esc_note        = _escape(entry.note)
+  esc_description = _escape(entry.description)
+
   if color:
     color_str = ur'\rowcolor%s' % color
   if entry.note:
-    note_str = ur' \newline \textbf{Note:} %s' % entry.note
+    note_str = ur' \newline \textbf{Note:} %s' % esc_note 
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
   instruction_str = _instructionToLatex(entry.instruction, entry.modifier)
+  note_str        = _format(note_str)
+  description_str = _format(esc_description)
   return r"%s %s & %5.1f & %s%s & %s \\ \hline" % (color_str,
                                                    instruction_str,
                                                    entry.absolute_distance,
-                                                   _escape(entry.description),
-                                                   _escape(note_str),
+                                                   description_str,
+                                                   note_str,
                                                    for_str)
 
 def makeLatex(ents):
