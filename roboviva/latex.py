@@ -46,7 +46,7 @@ def _format(text):
 
   # Step 0: Escape any whitespace-delimited *'s and **'s:
   text = re.sub(ur'\s\*\s', ur' \* ', text)
-  text = re.sub(ur'\s\**\s', ur' \*\* ', text)
+  text = re.sub(ur'\s\*\*\s', ur' \*\* ', text)
 
   # Do this in two passes. Each pass will replace **...** with \textbf{...},
   # and *...* with \emph{...}, where "..." DOES NOT CONTAIN ANY NESTED **...**
