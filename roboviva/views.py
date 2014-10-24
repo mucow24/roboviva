@@ -62,6 +62,7 @@ def handle_request(route_id):
     # Step three, make the latex:
     try:
       latex = roboviva.latex.makeLatex(cue_entries)
+      print latex
     except Exception as e:
       log.error("[request][%10d]: Error generating latex: %s\n cue:\n %s",
           route_id, e, cue_entries)
