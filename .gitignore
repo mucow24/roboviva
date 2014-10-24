@@ -5,6 +5,12 @@ __pycache__/
 # C extensions
 *.so
 
+# roboviva pdf cache:
+pdf_cache/
+
+# vim
+*.swp
+
 # Distribution / packaging
 .Python
 env/
