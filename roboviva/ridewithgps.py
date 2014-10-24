@@ -74,8 +74,11 @@ def _cleanDescription(description):
     St.", instead of "Foo St.". This blows up the "On" column in the final
     sheet, so try to fix it as best we can.
 
+    This method also removes any custom instructions, if they exist.
+
     description - the original ridewithgps description string, e.g. "Turn right onto Foo St."
   '''
+  description = re.sub("^\s*\[[^\]]+\]\s*",                                "",     description) 
   description = re.sub("^At the traffic circle,",                       "@ Circle,", description, flags=re.I)
   description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) (toward|onto|on) ", "",description, flags=re.I)
   description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) to stay on", "TRO",  description, flags=re.I)
@@ -167,14 +170,49 @@ def _rawCSVtoRWGPS_Entries(raw_csv_rows):
       ret[i].prev_absolute_distance = ret[i - 1].absolute_distance
   return ret
 
+def _parseCustomInstruction(raw_description):
+  '''
+  Tries to determine if the user is providing a custom instruction in the
+  description. These look like this:
+
+  [L/QR] Left on Foo St., quick right on Bar St.
+
+  This line should have a custom instruction of "L/QR", not "L". Custom
+  instructions must meet the following criteria to be accepted as such:
+    - They must be contained in []
+    - They must be the first non-whitespace text in the
+      description:
+        "  [L/QR] Foo"
+      is OK, but
+        "Left on Foo St. [QR] on Bar St."
+      is not.
+   - They must be "short". That is, they shouldn't overflow the width of the
+     "Go" column... we don't really enforce this, currently - we just let it
+     get ugly.
+  Returns the custom instruction as a string, if it exists. Otherwise, returns 'None'.
+  '''
+  m = re.match(r'^\s*\[([^\]]+)\]', raw_description)
+  if m:
+    return m.group(1)
+  else:
+    return None
+
+
 def _RWGPS_EntryToCueEntry(rwgps_entry):
   '''
   Converts a RWGPS_Entry into a cue.CueEntry.
   '''
 
+  # See if the user is providing a custom instruction:
+  custom_instruction = _parseCustomInstruction(rwgps_entry.description_str)
+  if custom_instruction:
+    instruction = custom_instruction
+    modifier    = cue.Modifier.NONE
+  else:
+    instruction = _instructionStrToCueInstruction(rwgps_entry.instruction_str)
+    modifier    = _getModifierFromRWGPSEntry(rwgps_entry)
+
   clean_desc  = _cleanDescription(rwgps_entry.description_str)
-  instruction = _instructionStrToCueInstruction(rwgps_entry.instruction_str)
-  modifier    = _getModifierFromRWGPSEntry(rwgps_entry)
   
   for_distance = None
   if rwgps_entry.next_absolute_distance:

@@ -104,6 +104,18 @@ class RWGPSTestCase(unittest.TestCase):
     for desc in descs:
       self.assertEqual(descs[desc], ridewithgps._cleanDescription(desc))
 
+  def test_parseCustomInstruction(self):
+    descs_insts = [ ("[L/QR] Foo Bar", "L/QR"),     # Common case
+                    ("   [L/QR] Foo Bar", "L/QR"),  # Starting whitespace (OK)
+                    ("[] Foo Bar",     None),       # Instruction must be at least one character 
+                    ("Foo [L] Bar",    None),       # Must be at the start of the description
+                    ("[L/QR] Foo [Rough]", "L/QR"), # Make sure it's not greedily matching
+                  ]
+    for desc_exp in descs_insts:
+      desc, exp = desc_exp
+      instruction = ridewithgps._parseCustomInstruction(desc)
+      self.assertEqual(exp, instruction)
+
   def test_RWGPSEntryToCueEntry(self):
     basic_ent = ridewithgps.RWGPS_Entry(instruction_str        = "Left",
                                         description_str        = "Turn left on Foobar St.",
@@ -126,10 +138,17 @@ class RWGPSTestCase(unittest.TestCase):
     cue_ent = ridewithgps._RWGPS_EntryToCueEntry(quick_ent) 
     self.assertEqual(cue_ent.modifier,    cue.Modifier.QUICK)
     self.assertEqual(cue_ent.instruction, cue.Instruction.LEFT)
+    
+    custom_ent = basic_ent
+    custom_ent.description_str = "[Custom] Left onto Foo Bar Baz"
+    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(custom_ent) 
+    self.assertEqual(cue_ent.modifier,    cue.Modifier.NONE)
+    self.assertEqual(cue_ent.instruction, "Custom")
+    self.assertEqual("Foo Bar Baz", cue_ent.description)
 
   def test_RWGPSQueryAndParse(self):
     Route_Id     = "6260667"
-    Expected_MD5 = "7e7655ebaae01d2d605f2e4dedf0672b"
+    Expected_MD5 = "fc3842ae134af2008092696c7b1af1fa"
     md5, cues    = ridewithgps.getMd5AndCueSheet(Route_Id)
 
     if md5 != Expected_MD5:
@@ -143,7 +162,7 @@ class RWGPSTestCase(unittest.TestCase):
     expected_cues = [("Start of route", cue.Instruction.NONE,  cue.Modifier.NONE,  0.0,  0.19, ""),
                      ("A",              cue.Instruction.RIGHT, cue.Modifier.NONE,  0.19, 0.09, ""),
                      ("B",              cue.Instruction.RIGHT, cue.Modifier.QUICK, 0.28, 0.19, "Test note B"),
-                     ("C",              cue.Instruction.LEFT,  cue.Modifier.NONE,  0.47, 0.08, ""),
+                     ("C",              "Custom Instruction",  cue.Modifier.NONE,  0.47, 0.08, ""),
                      ("End of route",   cue.Instruction.NONE,  cue.Modifier.NONE,  0.55, None, "")]
 
     for i, exp in enumerate(expected_cues):

@@ -48,6 +48,10 @@ class LatexTestCase(unittest.TestCase):
       latex_code = latex.makeLatex(ents)
       pdf_data = tex.latex2pdf(latex_code)
 
+  def test_customInstructionIsEscaped(self):
+    # Verify the user can't slip any sneaky Latex through custom instructions:
+    _QuickRender(instruction="\ %")
+
   def test_escape(self):
     '''
     Verify all characters that could cause trouble in the Latex rendering are
@@ -102,6 +106,15 @@ class LatexTestCase(unittest.TestCase):
                     modifier = cue.Modifier.QUICK,
                     for_distance = 12.34)
     expected = r'\rowcolor[gray]{0.7} \textbf{QL} &   0.0 & description_string \& \textbf{formatted} \newline \textbf{Note:} \emph{formatted note} &  12.3 \\ \hline'
+    self.assertEqual(expected, latex._entryToLatex(ent))
+    
+    # Custom description
+    desc = "description_string"
+    ent = cue.Entry("Custom Instruction",
+                    desc,
+                    0.0,
+                    for_distance = 12.34)
+    expected = r' \textbf{Custom Instruction} &   0.0 & description_string &  12.3 \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
 
   def test_latexRenderTest(self):

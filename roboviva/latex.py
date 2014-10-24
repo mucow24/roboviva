@@ -25,7 +25,7 @@ def _instructionToLatex(instruction, modifier):
     return r"\danger "
   else:
     # all others can be rendered as-is, in bold:
-    return r"\textbf{" + modifier + instruction + "}"
+    return r"\textbf{" + _escape(modifier) + _escape(instruction) + "}"
 
 def _escape(text):
   r''' Escapes &, #, and other characters in 'text' so they don't break the
@@ -136,7 +136,7 @@ LatexHeader = unicode(r'''
   \twocolumn
     \tabletail{\hline}
       \tablelasttail{\hline}
-        \begin{supertabular}{|p{0.25in}|p{0.35in}|p{2.25in}|l|}
+        \begin{supertabular}{|c|p{0.35in}|p{2.25in}|l|}
 
         \hline
         \rowcolor[gray]{0}
