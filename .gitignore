@@ -7,9 +7,11 @@ __pycache__/
 
 # roboviva pdf cache:
 pdf_cache/
+*.pdf
 
 # vim
 *.swp
+*.swo
 
 # Distribution / packaging
 .Python
