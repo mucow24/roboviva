@@ -75,9 +75,9 @@ def _entryColor(entry):
   colored.'''
   # Figure out row color:
   color = None
-  if (entry.instruction in (cue.Instruction.DANGER, cue.Instruction.PIT)):
+  if entry.color == cue.Color.YELLOW:
     color = ur'{yellow}'
-  elif entry.instruction == cue.Instruction.LEFT:
+  elif entry.color == cue.Color.GRAY:
     color = ur'[gray]{0.7}'
   return color
   
