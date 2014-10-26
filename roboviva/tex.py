@@ -141,7 +141,8 @@ def convert(tex_source, input_format, output_format, max_runs=5):
                 close_fds=True,
                 shell=False,
                 cwd=tex_dir,
-                env={'PATH': os.getenv('PATH')},
+                env={'PATH' : os.getenv('PATH'),
+                     'HOME' : os.getenv('HOME')},
             )
             tex_process.wait()
             if tex_process.returncode != 0:
