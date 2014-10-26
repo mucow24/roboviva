@@ -203,14 +203,16 @@ def _RWGPS_EntryToCueEntry(rwgps_entry):
   Converts a RWGPS_Entry into a cue.CueEntry.
   '''
 
-  # See if the user is providing a custom instruction:
+  # We figure out the color from the RWGPS-provided instruction:
+  instruction = _instructionStrToCueInstruction(rwgps_entry.instruction_str)
+  modifier    = _getModifierFromRWGPSEntry(rwgps_entry)
+  color       = cue.ColorFromInstruction(instruction)
+
+  # Once that's done, overwrite the instruction with the user-provided custom one:
   custom_instruction = _parseCustomInstruction(rwgps_entry.description_str)
   if custom_instruction:
     instruction = custom_instruction
     modifier    = cue.Modifier.NONE
-  else:
-    instruction = _instructionStrToCueInstruction(rwgps_entry.instruction_str)
-    modifier    = _getModifierFromRWGPSEntry(rwgps_entry)
 
   clean_desc  = _cleanDescription(rwgps_entry.description_str)
   
@@ -223,4 +225,5 @@ def _RWGPS_EntryToCueEntry(rwgps_entry):
                    rwgps_entry.absolute_distance,
                    rwgps_entry.note_str,
                    modifier,
-                   for_distance)
+                   for_distance,
+                   color)

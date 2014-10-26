@@ -8,11 +8,12 @@ def _QuickRender(instruction = cue.Instruction.NONE,
                  description = "",
                  note        = "",
                  abs_dist    = 0.0,
-                 for_dist    = 0.0):
+                 for_dist    = 0.0,
+                 color       = cue.Color.NONE):
   '''
   Renders a single instruction to PDF.
   '''
-  ent = [cue.Entry(instruction, description, abs_dist, note, modifier, for_dist)]
+  ent = [cue.Entry(instruction, description, abs_dist, note, modifier, for_dist, color)]
   latex_code = latex.makeLatex(ent)
   pdf        = tex.latex2pdf(latex_code)
 
@@ -63,26 +64,19 @@ class LatexTestCase(unittest.TestCase):
 
   def test_entryColor(self):
     # Just verify entries get the right colors:
-    danger_ent = cue.Entry(cue.Instruction.DANGER, "", 0.0)
-    pit_ent    = cue.Entry(cue.Instruction.PIT,    "", 0.0)
-    left_ent   = cue.Entry(cue.Instruction.LEFT,   "", 0.0)
-    right_ent  = cue.Entry(cue.Instruction.RIGHT,  "", 0.0)
-    noted_ent  = cue.Entry(cue.Instruction.STRAIGHT, "", 0.0, "I have a note")
+    nocolor_ent     = cue.Entry(cue.Instruction.NONE, "", 0.0, color = cue.Color.NONE)
+    graycolor_ent   = cue.Entry(cue.Instruction.NONE, "", 0.0, color = cue.Color.GRAY)
+    yellowcolor_ent = cue.Entry(cue.Instruction.NONE, "", 0.0, color = cue.Color.YELLOW)
 
     self.assertEqual(ur'{yellow}',
-                     latex._entryColor(danger_ent))
-    self.assertEqual(ur'{yellow}',
-                     latex._entryColor(pit_ent))
+                     latex._entryColor(yellowcolor_ent))
     self.assertEqual(ur'[gray]{0.7}',
-                     latex._entryColor(left_ent))
+                     latex._entryColor(graycolor_ent))
     self.assertEqual(None,
-                     latex._entryColor(right_ent))
-    # Don't color notes anymore:
-    self.assertEqual(None,
-                     latex._entryColor(noted_ent))
+                     latex._entryColor(nocolor_ent))
 
   def test_entryColor_renders(self):
-    for ins in (cue.Instruction.DANGER, cue.Instruction.PIT, cue.Instruction.LEFT):
+    for Color in (cue.Color.NONE, cue.Color.YELLOW, cue.Color.GRAY):
       _QuickRender(instruction=ins)
 
   def test_entryToLatex(self):
@@ -104,7 +98,8 @@ class LatexTestCase(unittest.TestCase):
                     0.0,
                     note = "*formatted note*",
                     modifier = cue.Modifier.QUICK,
-                    for_distance = 12.34)
+                    for_distance = 12.34,
+                    color = cue.Color.GRAY)
     expected = r'\rowcolor[gray]{0.7} \textbf{QL} &   0.0 & description_string \& \textbf{formatted} \newline \textbf{Note:} \emph{formatted note} &  12.3 \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
     
