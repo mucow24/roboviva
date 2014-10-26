@@ -1,0 +1,243 @@
+body {
+  padding: 0;
+  margin: 0;
+  background-color: #ffffff;
+  text-align: left;
+  color: #000000;
+}
+
+.body_error {
+  background-color: black;
+  color: white;
+}
+
+.body_error a:link {
+  color: #00DED1;
+}
+
+.body_error a:visited {
+  color: #00DED1;
+}
+
+.body_error a:active {
+  color: #FFB372;
+}
+
+.stripe {
+  display: block;
+  background-color: #01d4ff;
+  border: 0;
+  outline: 0;
+  height: 25px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+.main {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  margin: 20px;
+  padding: 10px;
+  text-align: center;
+}
+
+.outer {
+  display:  table;
+  position: absolute;
+  height:   100%;
+  width:    100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+input[type=text] {
+  border-radius: 50px; 
+  padding: 5px;
+  text-align: center;
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  outline: none;
+}
+
+.viva_button_disabled {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition:    all 0.30s ease-in-out;
+  -ms-transition:     all 0.30s ease-in-out;
+  -o-transition:      all 0.30s ease-in-out;
+  margin-right:auto;
+  margin-left:auto;
+  margin-top: 30px;
+  border-radius: 50px;
+  padding: 5px;
+  text-align: center;
+  border-width: 4px;
+  border-color: #CCCCCC;
+  border-style: solid;
+  background-color: #AAAAAA;
+  width: 200px;
+  color: #EEEEEE;
+  font-weight: 200;
+  font-size: 24px; 
+}
+
+.viva_button_enabled {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition:    all 0.30s ease-in-out;
+  -ms-transition:     all 0.30s ease-in-out;
+  -o-transition:      all 0.30s ease-in-out;
+  margin-right:       auto;
+  margin-left:        auto;
+  margin-top:         30px;
+  border-radius:      50px;
+  padding:            5px;
+  text-align:         center;
+  border-width:       4px;
+  border-color:       #FEEB31;
+  border-style:       solid;
+  background-color:   #FFFFFF;
+  width:              200px;
+  color:              #000000;
+  font-weight:        900;
+  font-size:          24px; 
+  text-decoration:    none;
+  box-shadow:         0 0 0 5px #FEA600, 0 0 0 10px #FD2637;
+  cursor:             pointer;
+}
+
+.viva_button_enabled:active {
+  border-color:     #B3D4E7;
+  box-shadow:       0 0 0 5px #57ACD6, 0 0 0 10px #004C8D;
+  color:            white;
+  background:       black;
+}
+
+@media only screen and (min-width: 0px) {
+  .main-text {
+    font-size: 34px;
+    text-align: center;
+    line-height:60px;
+  }
+  input {
+    font-size:34px;
+  }
+}
+
+@media only screen and (min-width: 700px) {
+  .main-text {
+    font-size: 36px;
+  }
+  input {
+    font-size:36px;
+  }
+}
+
+@media only screen and (min-width: 750px) {
+  .main-text {
+    font-size: 38px;
+  }
+  input {
+    font-size:38px;
+  }
+}
+@media only screen and (min-width: 850px) {
+  .main-text {
+    font-size: 44px;
+  }
+  input {
+    font-size:44px;
+  }
+}
+@media only screen and (min-width: 950px) {
+  .main-text {
+    font-size: 48px;
+  }
+  input {
+    font-size:48px;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .main-text {
+    font-size: 52px;
+  }
+  input {
+    font-size:52px;
+  }
+}
+
+input {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+}
+
+.badge-holder {
+  height: 90pt;
+  width: 90pt;
+  left: 40pt;
+  top: -12pt;
+  float:left;
+  position:relative;
+}
+.badge {
+  display:block;
+  width:80pt;
+  height:80pt;
+  background:red;
+  position:absolute;
+  top:0pt;
+  left:0pt;
+  -webkit-transform:rotate(45deg);
+  -moz-transform:rotate(45deg);
+  rotation:45deg;
+  text-align:center;
+  text-decoration:none;
+  color:white;
+  font-weight:bold;
+  font-family:Helvetica, sans-serif;
+  text-shadow:0 0 40px white;
+  -moz-transition: -moz-transform 0.3s ease;
+  -webkit-transition: -webkit-transform 0.3s ease;
+  transition: transform 0.3s ease;
+  line-height:26pt;
+  font-size:30pt;
+}
+.badge span {
+  display:block;
+  width:80pt;
+  height:80pt;
+  background:red;
+  -webkit-transform:rotate(-22.5deg);
+  -moz-transform:rotate(-22.5deg);
+  rotation:-22.5deg;
+
+}
+
+
+.badge-border {
+  display:block;
+  width:86;
+  height:86pt;
+  background:#BB0000;
+  -webkit-transform:rotate(-45deg);
+  -moz-transform:rotate(-45deg);
+  rotation:-45deg;
+  position:absolute;
+  top:-3pt;
+  left:-3pt;
+}
+.badge-border span {
+  display:block;
+  width:86pt;
+  height:86pt;
+  background:inherit;
+  -webkit-transform:rotate(-22.5deg);
+  -moz-transform:rotate(-22.5deg);
+  rotation:-22.5deg;
+}
+
