@@ -3,7 +3,7 @@ import re
   
 def _makeClimb(climb_type):
   '''Very simple utility method -- provides a common way to specify climb types'''
-  return r"$\underset{\text{" + climb_type + r"}}{\boldsymbol{\nearrow}}$"
+  return r"$\underset{\text{" + climb_type + r"}}{\text{\Mountain}}$"
 
 def _instructionToLatex(instruction, modifier):
   '''Maps a cue.Instruction the latex that should be used to render it'''
@@ -21,6 +21,8 @@ def _instructionToLatex(instruction, modifier):
     return _makeClimb("HC")
   elif instruction == cue.Instruction.SUMMIT:
     return _makeClimb("END")
+  elif instruction == cue.Instruction.DANGER:
+    return r"\danger "
   else:
     # all others can be rendered as-is, in bold:
     return r"\textbf{" + modifier + instruction + "}"
@@ -126,6 +128,8 @@ LatexHeader = unicode(r'''
 \usepackage{supertabular}
 \usepackage{amsmath}
 \usepackage{helvet}
+\usepackage{fourier}
+\usepackage[alpine]{ifsym}
 \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
