@@ -77,7 +77,7 @@ class LatexTestCase(unittest.TestCase):
 
   def test_entryColor_renders(self):
     for Color in (cue.Color.NONE, cue.Color.YELLOW, cue.Color.GRAY):
-      _QuickRender(instruction=ins)
+      _QuickRender(color = Color)
 
   def test_entryToLatex(self):
     # No color, no 'for', no note, no modifier: 
