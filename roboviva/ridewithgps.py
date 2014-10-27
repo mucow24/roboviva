@@ -118,6 +118,8 @@ def _instructionStrToCueInstruction(instruction_str):
     return cue.Instruction.CAT_1
   elif instruction_str == "Hors Category":
     return cue.Instruction.CAT_HC
+  elif instruction_str == "First Aid":
+    return cue.Instruction.FIRST_AID
   else:
     # Just punt to whatever they gave us:
     return instruction_str

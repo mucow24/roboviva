@@ -22,7 +22,9 @@ def _instructionToLatex(instruction, modifier):
   elif instruction == cue.Instruction.SUMMIT:
     return _makeClimb("END")
   elif instruction == cue.Instruction.DANGER:
-    return r"\danger "
+    return r"\Large \danger "
+  elif instruction == cue.Instruction.FIRST_AID:
+    return r"\raisebox{-0.15em}{\Plus} "
   else:
     # all others can be rendered as-is, in bold:
     return r"\textbf{" + _escape(modifier) + _escape(instruction) + "}"
@@ -129,6 +131,7 @@ LatexHeader = unicode(r'''
 \usepackage{amsmath}
 \usepackage{helvet}
 \usepackage{fourier}
+\usepackage{bbding}
 \usepackage[alpine]{ifsym}
 \renewcommand{\familydefault}{\sfdefault}
 

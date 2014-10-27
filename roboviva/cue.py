@@ -15,6 +15,7 @@ Instruction = enum.Enum(LEFT        = "L",
                         CAT_4       = "C4",
                         CAT_5       = "C5",
                         SUMMIT      = "^",
+                        FIRST_AID   = "+",
                         NONE        = "")
 
 '''An instruction modifier. Only really makes sense for LEFT and RIGHT, at the moment'''
