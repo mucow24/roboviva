@@ -144,12 +144,22 @@ def dump_cache():
     ents.append( (ts, route_id, md5_sum) )
 
   ret  = "<table border=1>\n"
-  ret += "  <tr><th>route id</th><th>md5</th><th>age (s)</th><th>Remove?</th></tr>\n"
+  ret += "  <tr><th>route id</th><th>md5</th><th>age</th><th>Remove?</th></tr>\n"
   for timestamp, route_id, md5_sum in sorted(ents):
     ret += "  <tr>\n"
     ret += "    <td>%s</td>\n" % route_id
     ret += "    <td>%s</td>\n" % md5_sum
-    ret += "    <td>%s seconds</td>\n" % (time.time() - timestamp)
+    age = time.time() - timestamp
+    age_str = ""
+    if age < 60:
+      age_str = "%d sec" % age
+    elif age > 60 and age < 3600:
+      age_str = "%d min" % (age / 60.)
+    elif age > 3600 and age < 86400:
+      age_str = "%d hr" % (age / 3600.)
+    else:
+      age_str = "%.1f days" % (age / 86400.)
+    ret += "    <td>%s</td>\n" % age_str
     ret += "    <td><a href=%s>Remove</a></td>\n" % (flask.url_for('roboviva.remove_route',
                                                                     route_id = route_id))
     ret += "  </tr>\n"
