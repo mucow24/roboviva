@@ -61,7 +61,7 @@ def handle_request(route_id):
   # We map from str(route_id) -> (md5_hash, sec_since_epoch)
   hash_db = flask.ext.shelve.get_shelve('c')
   db_key  = str(route_id)
- 
+
   is_present = db_key in hash_db
   old_hash   = None
   old_time   = None
@@ -72,7 +72,7 @@ def handle_request(route_id):
     if not is_present:
       log.info("[request][%10d]: new_ent: %s", route_id, md5_hash)
     else:
-      log.info("[request][%10d]: replace: %s -> %s", 
+      log.info("[request][%10d]: replace: %s -> %s",
           route_id, old_hash, md5_hash)
 
     # Step three, make the latex:
@@ -138,7 +138,7 @@ def get_pdf(route_id):
 @blueprint.route('/cache')
 def dump_cache():
   hash_db = flask.ext.shelve.get_shelve('c')
-  ents = [] 
+  ents = []
   for route_id in hash_db:
     md5_sum, ts = hash_db[route_id]
     ents.append( (ts, route_id, md5_sum) )

@@ -30,9 +30,10 @@ body {
   outline: 0;
   height: 25px;
   width: 100%;
-  padding: 0;
-  margin: 0;
+  padding: 0px;
+  margin:  0;
   display: block;
+  padding-right:10px;
 }
 
 .main {
@@ -59,13 +60,14 @@ body {
   position:      fixed;
   left:          0px;
   bottom:        0px;
-  width          100%;
   color:         #CCCCCC;
   font-family:   'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-style:    italic;
-  text-align:    right;
+  text-align:    left;
   margin-left:   10px;
   margin-bottom: 10px;
+  padding-right:  10px;
+  width:         100%;
 }
 
 .footer a:link    { color: #CCCCCC; }
@@ -73,6 +75,57 @@ body {
 .footer a:hover   { color: #CCCCCC; }
 .footer a:active  { color: #CCCCCC; }
 
+.tips_main {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size:     12pt;
+  margin:        20px;
+  text-align:    left;
+  height:        100%;
+  line-height:   150%;
+}
+
+.tips_main h1 {
+  font-weight: 900;
+  font-size:   24pt;
+}
+
+.tips_main h2 {
+  font-weight: 900;
+  font-size:   18pt;
+}
+
+.tips_main p {
+  margin-left: 40px;
+}
+
+.tips_main ul {
+  list-style-type: none;
+  padding-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+}
+
+.tips_main li {
+  margin-bottom: 30px;
+}
+
+.tips_main img {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  margin-left: 40px;
+  border-width: 2px;
+  border-color: black;
+  border-style: solid;
+}
+
+.tips_footer {
+  margin-top:  50px;
+  color:       #CCCCCC;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-style:  italic;
+  text-align:  left;
+}
 input[type=text] {
   border-radius: 50px; 
   padding: 5px;
