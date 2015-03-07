@@ -165,6 +165,9 @@ class RWGPSTestCase(unittest.TestCase):
   def test_RWGPSQueryAndParse(self):
     Route_Id      = "6260667"
     Expected_ETag = "\"fc3842ae134af2008092696c7b1af1fa\""
+
+    # Note we do NOT pass in 'Expected_ETag', here, so we always get the full
+    # set of cue data:
     etag, cues     = ridewithgps.getETagAndCuesheet(Route_Id)
 
     if etag != Expected_ETag:
@@ -189,6 +192,12 @@ class RWGPSTestCase(unittest.TestCase):
       self.assertAlmostEqual(dist,     cues[i].absolute_distance)
       self.assertAlmostEqual(for_dist, cues[i].for_distance)
       self.assertEqual(note,           cues[i].note)
+
+    # Finally, query RWHPS again, this time passing in Expected_ETag, to verify
+    # the call returns 'None' as expected:
+    etag, cues = ridewithgps.getETagAndCuesheet(Route_Id, Expected_ETag)
+    self.assertEqual(None, cues)
+    self.assertEqual(Expected_ETag, etag)
 
 if __name__ == '__main__':
   unittest.main()
