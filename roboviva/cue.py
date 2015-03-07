@@ -57,7 +57,7 @@ def ColorFromInstruction(instruction):
 
 class Entry(object):
   '''Simple storage class representing a single cue sheet entry. Nothing fancy.'''
-  def __init__(self, 
+  def __init__(self,
               instruction,
               description,
               absolute_distance,
@@ -89,10 +89,26 @@ class Entry(object):
     else:
       for_str = "     "
 
-    return "Entry[%s%s | %5.2f | %s | %s | %s | %s]" % (self.modifier, 
+    return "Entry[%s%s | %5.2f | %s | %s | %s | %s]" % (self.modifier,
                                                    self.instruction,
                                                    self.absolute_distance,
                                                    for_str,
                                                    self.description,
-                                                   self.note, 
+                                                   self.note,
                                                    self.color)
+
+class Route(object):
+  '''Simple storage class representing a route. This is just a list of Entrys,
+  plus some metadata (title, route #, etc.)'''
+  def __init__(self, entries, route_id, route_name=None):
+    '''
+      Inits the storage members of the class:
+
+      - entries:      A list of Entry objects
+      - route_id: The RWGPS route # for this route
+      - route_name:   The name of this route (Optional)
+    '''
+    self.route_name   = route_name
+    self.route_id = route_id
+    self.entries = entries
+

@@ -16,7 +16,7 @@
 
 import cue
 import re
-  
+
 def _makeClimb(climb_type):
   '''Very simple utility method -- provides a common way to specify climb types'''
   return r"$\underset{\textbf{" + climb_type + r"}}{\text{\large \Mountain}}$"
@@ -98,7 +98,7 @@ def _entryColor(entry):
   elif entry.color == cue.Color.GRAY:
     color = ur'[gray]{0.7}'
   return color
-  
+
 def _entryToLatex(entry):
   '''Converts a cue.Entry into a latex supertabular row string'''
 
@@ -114,7 +114,7 @@ def _entryToLatex(entry):
   if color:
     color_str = ur'\rowcolor%s' % color
   if entry.note:
-    note_str = ur' \newline \textbf{Note:} %s' % esc_note 
+    note_str = ur' \newline \textbf{Note:} %s' % esc_note
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
@@ -128,11 +128,15 @@ def _entryToLatex(entry):
                                                    note_str,
                                                    for_str)
 
-def makeLatex(ents):
-  ''' Makes a full latex document from an array of cue.Entry's
-      ents - list of cue.Entry objects
+def makeLatex(route):
+  ''' Makes a full latex document from a cue.Route object
+
+      route - a Cue.Route object, fully initialized.
+
+      Returns the Latex output generated from 'route', as a string.
   '''
   ret = LatexHeader
+  ents = route.entries
   for ent in ents:
     ret = ret + _entryToLatex(ent) + "\n"
   ret = ret + LatexFooter
@@ -141,7 +145,7 @@ def makeLatex(ents):
 LatexHeader = unicode(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
-\geometry{letterpaper} 
+\geometry{letterpaper}
 \usepackage{colortbl}
 \usepackage{supertabular}
 \usepackage{amsmath}
@@ -165,6 +169,6 @@ LatexHeader = unicode(r'''
 
 LatexFooter = unicode(r'''
 \end{supertabular}
-\end{document} 
+\end{document}
 ''')
 

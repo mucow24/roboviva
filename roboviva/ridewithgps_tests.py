@@ -168,7 +168,7 @@ class RWGPSTestCase(unittest.TestCase):
 
     # Note we do NOT pass in 'Expected_ETag', here, so we always get the full
     # set of cue data:
-    etag, cues     = ridewithgps.getETagAndCuesheet(Route_Id)
+    etag, route = ridewithgps.getETagAndCuesheet_viaCSV(Route_Id)
 
     if etag != Expected_ETag:
       print "Queried RWGPS (route id %s):" % Route_Id
@@ -177,6 +177,8 @@ class RWGPSTestCase(unittest.TestCase):
       print "Skipping end-to-end test."
       self.skipTest("MD5 mismatch: expected %s, got %s (route id: %s)" % (Expected_ETag, etag, Route_Id))
 
+    self.assertEqual(Route_Id, route.route_id)
+    cues = route.entries
                       # Desc            Instruction            Modifier            Dist  For   Note
     expected_cues = [("Start of route", cue.Instruction.NONE,  cue.Modifier.NONE,  0.0,  0.19, ""),
                      ("A",              cue.Instruction.RIGHT, cue.Modifier.NONE,  0.19, 0.09, ""),
@@ -195,7 +197,7 @@ class RWGPSTestCase(unittest.TestCase):
 
     # Finally, query RWHPS again, this time passing in Expected_ETag, to verify
     # the call returns 'None' as expected:
-    etag, cues = ridewithgps.getETagAndCuesheet(Route_Id, Expected_ETag)
+    etag, cues = ridewithgps.getETagAndCuesheet_viaCSV(Route_Id, Expected_ETag)
     self.assertEqual(None, cues)
     self.assertEqual(Expected_ETag, etag)
 

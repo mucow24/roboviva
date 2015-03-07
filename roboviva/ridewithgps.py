@@ -63,15 +63,17 @@ def getEtagForCSV(route_id):
   print "etag: %s" % etag
   return etag
 
-def getETagAndCuesheet(route_id, etag=None):
+def getETagAndCuesheet_viaCSV(route_id, etag=None):
   '''
       Queries RideWithGPS for the cue data for 'route_id'. If 'etag' is
       non-None, then 'etag' is passed to the server in the 'If-None-Match' HTTP
       header.
 
-      Returns: A 2-tuple of the server's ETag, and either a list of CueEntry
-      objects, if new data was on the server, or "None", if 'etag' is still
-      current.
+      Returns: A 2-tuple of the server's ETag, and either a cue.Route object,
+      if new data was on the server, or "None", if 'etag' is still current.
+
+      NOTE: This method fetches the route info via RWGPS's CSV export feature,
+            which does NOT include the route's name.
 
       route_id - The numeric route ID to fetch. (e.g. '12345' in ridewithgps.com/routes/12345)
       etag     - The HTTP ETag header returned by the server the last time we
@@ -117,7 +119,8 @@ def getETagAndCuesheet(route_id, etag=None):
   entries = _rawCSVtoRWGPS_Entries(rows)
 
   # And then to cue.Entry objects:
-  return (new_etag, [_RWGPS_EntryToCueEntry(entry) for entry in entries])
+  route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in entries], route_id)
+  return (new_etag, route)
 
 def _cleanDescription(description):
   '''
