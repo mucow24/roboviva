@@ -44,7 +44,7 @@ def handle_request(route_id):
   db_key  = str(route_id)
   cached_etag = None
   if db_key in hash_db:
-    cached_etag = hash_db[db_key]
+    cached_etag, timestamp = hash_db[db_key]
 
   # Query RideWithGPS. This method will return the current ETag, and, if the
   # current ETag is different from the one we have on file, the full cue data
