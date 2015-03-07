@@ -37,12 +37,20 @@ def handle_request(route_id):
   log = flask.current_app.logger
   log.debug("[request][%10d]: start", route_id)
 
-  # Step one - get cuesheet entries from ridewithgps
-  # This is always necessary since the route might have changed since we last
-  # processed it. We md5 the cue entries, and use that to see if it's worth
-  # regenerating the PDF.
+  # Roboviva uses the HTTP ETag header to determine if it's worth
+  # re-downloading the route information from RideWithGPS, so step one is
+  # determining if we have an ETag already on hand:
+  hash_db = flask.ext.shelve.get_shelve('c')
+  db_key  = str(route_id)
+  cached_etag = None
+  if db_key in hash_db:
+    cached_etag = hash_db[db_key]
+
+  # Query RideWithGPS. This method will return the current ETag, and, if the
+  # current ETag is different from the one we have on file, the full cue data
+  # for the route:
   try:
-    md5_hash, cue_entries = roboviva.ridewithgps.getMd5AndCueSheet(route_id)
+    cur_etag, cue_entries = roboviva.ridewithgps.getETagAndCuesheet(route_id, cached_etag)
   except roboviva.ridewithgps.RideWithGpsError as e:
     log.warning("[request][%10d]: RideWithGPS error: %s", route_id, e)
     return flask.render_template('error.html', error=("'%s' is not a valid RideWithGPS Route :(" % route_id))
@@ -52,28 +60,17 @@ def handle_request(route_id):
                                  error = 'Error querying RideWithGPS',
                                  meditation = '{Guru Meditation: 0xFA}')
 
+  log.debug("[request][%10d]: GPS OK, old etag: %s cur etag:", route_id, cached_etag, cur_etag)
 
-  log.debug("[request][%10d]: GPS OK, md5 = %s", route_id, md5_hash)
-
-  # Step two: Hash check
-  # We use the flask shelve as a 'database', here, since it's easy and
-  # performance isn't a major concern.
-  # We map from str(route_id) -> (md5_hash, sec_since_epoch)
-  hash_db = flask.ext.shelve.get_shelve('c')
-  db_key  = str(route_id)
-
-  is_present = db_key in hash_db
-  old_hash   = None
-  old_time   = None
-  if is_present:
-    old_hash, old_time = hash_db[db_key]
-
-  if not is_present or old_hash != md5_hash:
-    if not is_present:
-      log.info("[request][%10d]: new_ent: %s", route_id, md5_hash)
+  if cur_etag == cached_etag:
+    log.info("[request][%10d]: No changes, redirecting to cache.")
+  else:
+    # Need to update the cache, and regenerate the PDF:
+    if cached_etag is None:
+      log.info("[request][%10d]: new_ent: %s", route_id, cur_etag)
     else:
       log.info("[request][%10d]: replace: %s -> %s",
-          route_id, old_hash, md5_hash)
+               route_id, cached_etag, cur_etag)
 
     # Step three, make the latex:
     try:
@@ -111,10 +108,7 @@ def handle_request(route_id):
           meditation = "{Guru Meditation: 0xCE - Error writing PDF}")
 
     # Update the hash db:
-    hash_db[db_key] = (md5_hash, time.time())
-  else: # Have a PDF for this route + MD5 in the cache already
-    log.info("[request][%10d]:  cached: %s (%d sec ago)",
-        route_id, md5_hash, time.time() - old_time)
+    hash_db[db_key] = (cur_etag, time.time())
 
   # ...and point them to the final PDF, which can be served statically from
   # pdfs/<route_id>.pdf:

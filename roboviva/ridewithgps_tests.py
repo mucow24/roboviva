@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import ridewithgps 
+import ridewithgps
 import cue
 import tex
 
@@ -59,7 +59,7 @@ class RWGPSTestCase(unittest.TestCase):
                                        next_absolute_distance = 11.0,
                                        note_str               = "")
     self.assertEqual(cue.Modifier.NONE, ridewithgps._getModifierFromRWGPSEntry(none_ent))
-    
+
     none_ent_2 = ridewithgps.RWGPS_Entry(instruction_str        = "Food",
                                        description_str        = "Bear Mt Inn",
                                        absolute_distance      = 10.0,
@@ -95,7 +95,7 @@ class RWGPSTestCase(unittest.TestCase):
                { 'type' : 'Left',  'note' : 'Turn left on E', 'absolute_distance' : "2.2", "description" : ""}]
 
       entries = ridewithgps._rawCSVtoRWGPS_Entries(rows)
-    
+
       for i, ent in enumerate(entries):
         self.assertEqual(rows[i]['note'],        ent.description_str)
         self.assertEqual(rows[i]['description'], ent.note_str)
@@ -123,7 +123,7 @@ class RWGPSTestCase(unittest.TestCase):
   def test_parseCustomInstruction(self):
     descs_insts = [ ("[L/QR] Foo Bar", "L/QR"),     # Common case
                     ("   [L/QR] Foo Bar", "L/QR"),  # Starting whitespace (OK)
-                    ("[] Foo Bar",     None),       # Instruction must be at least one character 
+                    ("[] Foo Bar",     None),       # Instruction must be at least one character
                     ("Foo [L] Bar",    None),       # Must be at the start of the description
                     ("[L/QR] Foo [Rough]", "L/QR"), # Make sure it's not greedily matching
                   ]
@@ -139,7 +139,7 @@ class RWGPSTestCase(unittest.TestCase):
                                         prev_absolute_distance = 9.5,
                                         next_absolute_distance = 11.0,
                                         note_str               = "Note!")
-    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(basic_ent) 
+    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(basic_ent)
     self.assertEqual(cue.Instruction.LEFT, cue_ent.instruction)
     self.assertEqual(cue.Modifier.NONE,    cue_ent.modifier)
     self.assertEqual("Foobar St.", cue_ent.description)
@@ -151,30 +151,30 @@ class RWGPSTestCase(unittest.TestCase):
     quick_ent = basic_ent
     quick_ent.absolute_distance = 10.0
     quick_ent.prev_absolute_distance = 9.9
-    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(quick_ent) 
+    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(quick_ent)
     self.assertEqual(cue_ent.modifier,    cue.Modifier.QUICK)
     self.assertEqual(cue_ent.instruction, cue.Instruction.LEFT)
-    
+
     custom_ent = basic_ent
     custom_ent.description_str = "[Custom] Left onto Foo Bar Baz"
-    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(custom_ent) 
+    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(custom_ent)
     self.assertEqual(cue_ent.modifier,    cue.Modifier.NONE)
     self.assertEqual(cue_ent.instruction, "Custom")
     self.assertEqual("Foo Bar Baz", cue_ent.description)
 
   def test_RWGPSQueryAndParse(self):
-    Route_Id     = "6260667"
-    Expected_MD5 = "fc3842ae134af2008092696c7b1af1fa"
-    md5, cues    = ridewithgps.getMd5AndCueSheet(Route_Id)
+    Route_Id      = "6260667"
+    Expected_ETag = "\"fc3842ae134af2008092696c7b1af1fa\""
+    etag, cues     = ridewithgps.getETagAndCuesheet(Route_Id)
 
-    if md5 != Expected_MD5:
+    if etag != Expected_ETag:
       print "Queried RWGPS (route id %s):" % Route_Id
-      print "\tGot md5: %s" % md5
-      print "\tExp md5: %s" % Expected_MD5
+      print "\tGot etag: %s" % etag
+      print "\tExp etag: %s" % Expected_ETag
       print "Skipping end-to-end test."
-      self.skipTest("MD5 mismatch: expected %s, got %s (route id: %s)" % (Expected_MD5, md5, Route_Id))
-    
-                      # Desc            Instruction            Modifier            Dist  For   Note 
+      self.skipTest("MD5 mismatch: expected %s, got %s (route id: %s)" % (Expected_ETag, etag, Route_Id))
+
+                      # Desc            Instruction            Modifier            Dist  For   Note
     expected_cues = [("Start of route", cue.Instruction.NONE,  cue.Modifier.NONE,  0.0,  0.19, ""),
                      ("A",              cue.Instruction.RIGHT, cue.Modifier.NONE,  0.19, 0.09, ""),
                      ("B",              cue.Instruction.RIGHT, cue.Modifier.QUICK, 0.28, 0.19, "Test note B"),

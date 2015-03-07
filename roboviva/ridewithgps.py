@@ -27,36 +27,32 @@ class RideWithGpsError(Exception):
 
 class RWGPS_Entry(object):
   '''Simple storage class containing the RWGPS-provided data for a single cue entry'''
-  def __init__(self, 
-               instruction_str, 
+  def __init__(self,
+               instruction_str,
                description_str,
                absolute_distance,
                prev_absolute_distance,
                next_absolute_distance,
                note_str):
-   self.instruction_str = instruction_str 
+   self.instruction_str = instruction_str
    self.description_str = description_str
    self.absolute_distance = absolute_distance
    self.prev_absolute_distance = prev_absolute_distance
    self.next_absolute_distance = next_absolute_distance
    self.note_str = note_str
 
-def getMd5AndCueSheet(route_id):
+def getEtagForCSV(route_id):
   '''
-      Queries RideWithGPS, and returns a list of CueEntrys, along with the MD5
-      checksum of the raw CSV data that generated it.
-
-      route_id - The numeric route ID to fetch. (e.g. '12345' in ridewithgps.com/routes/12345)
-
-      Throws a RideWithGpsError in the event of a problem (invalid route id, etc.)
+      Queries RideWithGPS for the CSV file of the given route_id. Returns the
+      HTTP etag header value for this route id, discarding the actual result.
+      For testing purposes only.
   '''
   url = "http://ridewithgps.com/routes/%s.csv" % route_id
-
-  raw_csv      = None
   Max_Attempts = 3
   for n_tries in xrange(Max_Attempts):
     try:
-      raw_csv = urllib2.urlopen(url, timeout = 5).read()
+      headers = urllib2.urlopen(url, timeout = 5).info()
+      etag = headers.getheader("ETag")
       break
     except urllib2.HTTPError as e:
       # Probably a 404, so don't bother retrying
@@ -64,12 +60,53 @@ def getMd5AndCueSheet(route_id):
     except socket.timeout as e:
       # Timeout, let this pass:
       pass
+  print "etag: %s" % etag
+  return etag
+
+def getETagAndCuesheet(route_id, etag=None):
+  '''
+      Queries RideWithGPS for the cue data for 'route_id'. If 'etag' is
+      non-None, then 'etag' is passed to the server in the 'If-None-Match' HTTP
+      header.
+
+      Returns: A 2-tuple of the server's ETag, and either a list of CueEntry
+      objects, if new data was on the server, or "None", if 'etag' is still
+      current.
+
+      route_id - The numeric route ID to fetch. (e.g. '12345' in ridewithgps.com/routes/12345)
+      etag     - The HTTP ETag header returned by the server the last time we
+                 asked for this route, or "None" if this is a new route, or we
+                 want a fresh copy.
+
+      Throws a RideWithGpsError in the event of a problem (invalid route id, etc.)
+  '''
+  url = "http://ridewithgps.com/routes/%s.csv" % route_id
+  req = urllib2.Request(url)
+  if etag:
+    req.add_header("If-None-Match", etag)
+
+  raw_csv      = None
+  Max_Attempts = 3
+  for n_tries in xrange(Max_Attempts):
+    try:
+      resp = urllib2.urlopen(req, timeout = 5)
+      new_etag = resp.info().getheader("ETag")
+      raw_csv = resp.read()
+      break
+    except urllib2.HTTPError as e:
+      # This might be a 304: Not Modified, which means the etag we passed was still current:
+      if e.code == 304:
+        # Return the original ETag, and 'None" for the cue entries, as specified:
+        return (etag, None)
+
+      # Otherwise, this is probably a 404:
+      raise RideWithGpsError("Unknown Route ID: %s" % route_id)
+    except socket.timeout as e:
+      # Timeout, let this pass:
+      pass
   if not raw_csv:
     raise Exception("No data from RideWithGPS after %d tries" % Max_Attempts)
-      
-  # Compute raw csv MD5:
-  md5 = hashlib.md5(raw_csv).hexdigest()
-  
+
   # Read in CSV rows:
   reader = csv.DictReader(raw_csv.split("\n"),
                           ['type', 'note', 'absolute_distance', 'elevation', 'description'])
@@ -80,10 +117,10 @@ def getMd5AndCueSheet(route_id):
   entries = _rawCSVtoRWGPS_Entries(rows)
 
   # And then to cue.Entry objects:
-  return (md5, [_RWGPS_EntryToCueEntry(entry) for entry in entries])
+  return (new_etag, [_RWGPS_EntryToCueEntry(entry) for entry in entries])
 
 def _cleanDescription(description):
-  ''' 
+  '''
     Clean up the description.
 
     RWGPS Duplicates the instruction in the description, e.g. "Right on Foo
@@ -94,7 +131,7 @@ def _cleanDescription(description):
 
     description - the original ridewithgps description string, e.g. "Turn right onto Foo St."
   '''
-  description = re.sub("^\s*\[[^\]]+\]\s*",                                "",     description) 
+  description = re.sub("^\s*\[[^\]]+\]\s*",                                "",     description)
   description = re.sub("^At the traffic circle,",                       "@ Circle,", description, flags=re.I)
   description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) (toward|onto|on) ", "",description, flags=re.I)
   description = re.sub("^(Slight|Turn|Bear|Keep) (left|right) to stay on", "TRO",  description, flags=re.I)
@@ -165,10 +202,10 @@ def _rawCSVtoRWGPS_Entries(raw_csv_rows):
   '''Converts an array of raw CSV rows, as provided by ridewithgps, and
   converts them into an array of RWGPS_Entry objects. This assumes the first
   entry in the array is the first cue entry, *not* the CSV header. Each row
-  should have been parsed into a python dictionary prior to calling this. 
-   
+  should have been parsed into a python dictionary prior to calling this.
+
   This assumes the following field mappings:
-  RWGPS Field Name:         Roboviva Field Name: 
+  RWGPS Field Name:         Roboviva Field Name:
   type                   -> instruction_str
   note                   -> description_str
   absolute_distance      -> absolute_distance
@@ -233,7 +270,7 @@ def _RWGPS_EntryToCueEntry(rwgps_entry):
     modifier    = cue.Modifier.NONE
 
   clean_desc  = _cleanDescription(rwgps_entry.description_str)
-  
+
   for_distance = None
   if rwgps_entry.next_absolute_distance:
     for_distance = rwgps_entry.next_absolute_distance - rwgps_entry.absolute_distance
