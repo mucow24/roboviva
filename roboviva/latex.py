@@ -16,7 +16,7 @@
 
 import cue
 import re
-  
+
 def _makeClimb(climb_type):
   '''Very simple utility method -- provides a common way to specify climb types'''
   return r"$\underset{\textbf{" + climb_type + r"}}{\text{\large \Mountain}}$"
@@ -98,7 +98,7 @@ def _entryColor(entry):
   elif entry.color == cue.Color.GRAY:
     color = ur'[gray]{0.7}'
   return color
-  
+
 def _entryToLatex(entry):
   '''Converts a cue.Entry into a latex supertabular row string'''
 
@@ -141,7 +141,7 @@ def makeLatex(ents):
 LatexHeader = unicode(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
-\geometry{letterpaper} 
+\geometry{letterpaper}
 \usepackage{colortbl}
 \usepackage{supertabular}
 \usepackage{amsmath}
@@ -165,6 +165,6 @@ LatexHeader = unicode(r'''
 
 LatexFooter = unicode(r'''
 \end{supertabular}
-\end{document} 
+\end{document}
 ''')
 

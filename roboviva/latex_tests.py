@@ -18,7 +18,7 @@ import unittest
 import latex
 import cue
 import tex
-  
+
 def _QuickRender(instruction = cue.Instruction.NONE,
                  modifier    = cue.Modifier.NONE,
                  description = "",
@@ -47,7 +47,7 @@ class LatexTestCase(unittest.TestCase):
 
     self.assertEqual(r"\textbf{QR}",
                      latex._instructionToLatex(cue.Instruction.RIGHT, cue.Modifier.QUICK))
-    
+
     self.assertEqual(r"\textbf{R}",
                      latex._instructionToLatex(cue.Instruction.RIGHT, cue.Modifier.NONE))
 
@@ -59,7 +59,7 @@ class LatexTestCase(unittest.TestCase):
       ents = []
       for i in cue.Instruction.__dict__:
         if '__' in i:
-          continue 
+          continue
         instruction = cue.Instruction.__dict__[i]
         ents.append(cue.Entry(instruction, r"Description", 0.0))
       latex_code = latex.makeLatex(ents)
@@ -96,7 +96,7 @@ class LatexTestCase(unittest.TestCase):
       _QuickRender(color = Color)
 
   def test_entryToLatex(self):
-    # No color, no 'for', no note, no modifier: 
+    # No color, no 'for', no note, no modifier:
     desc = "description_string & **formatted**"
     ent = cue.Entry(cue.Instruction.RIGHT,
                     desc,
@@ -106,8 +106,8 @@ class LatexTestCase(unittest.TestCase):
                     for_distance = None)
     expected = r' \textbf{R} &   0.0 & description_string \& \textbf{formatted} &  \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
-    
-    # color, 'for', note, and modifier: 
+
+    # color, 'for', note, and modifier:
     desc = "description_string & **formatted**"
     ent = cue.Entry(cue.Instruction.LEFT,
                     desc,
@@ -118,7 +118,7 @@ class LatexTestCase(unittest.TestCase):
                     color = cue.Color.GRAY)
     expected = r'\rowcolor[gray]{0.7} \textbf{QL} &   0.0 & description_string \& \textbf{formatted} \newline \textbf{Note:} \emph{formatted note} &  12.3 \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
-    
+
     # Custom description
     desc = "description_string"
     ent = cue.Entry("Custom Instruction",
