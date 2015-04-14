@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cue
 import csv
-import urllib2
-import socket
+import cue
 import hashlib
+import json
 import re
+import socket
+import urllib2
 
 class RideWithGpsError(Exception):
   '''Thrown by getCueSheet() in the event of an error'''
@@ -62,6 +63,88 @@ def getEtagForCSV(route_id):
       pass
   print "etag: %s" % etag
   return etag
+
+def getETagAndCuesheet_viaJSON(route_id, etag=None):
+  '''
+      Queries RideWithGPS for the cue data for 'route_id'. If 'etag' is
+      non-None, then 'etag' is passed to the server in the 'If-None-Match' HTTP
+      header.
+
+      Returns: A 2-tuple of the server's ETag, and either a cue.Route object,
+      if new data was on the server, or "None", if 'etag' is still current.
+
+      NOTE: This method fetches the route info via RWGPS's JSON export feature,
+            which DOES include the route name and other metadata.
+
+      route_id - The numeric route ID to fetch. (e.g. '12345' in ridewithgps.com/routes/12345)
+      etag     - The HTTP ETag header returned by the server the last time we
+                 asked for this route, or "None" if this is a new route, or we
+                 want a fresh copy.
+
+      Throws a RideWithGpsError in the event of a problem (invalid route id, etc.)
+  '''
+  url = "http://ridewithgps.com/routes/%s.json" % route_id
+  req = urllib2.Request(url)
+  if etag:
+    req.add_header("If-None-Match", etag)
+
+  raw_json = None
+  Max_Attempts = 3
+  for n_tries in xrange(Max_Attempts):
+    try:
+      resp = urllib2.urlopen(req, timeout = 5)
+      new_etag = resp.info().getheader("ETag")
+      raw_json = resp.read()
+      break
+    except urllib2.HTTPError as e:
+      # This might be a 304: Not Modified, which means the etag we passed was still current:
+      if e.code == 304:
+        # Return the original ETag, and 'None" for the cue entries, as specified:
+        return (etag, None)
+
+      # Otherwise, this is probably a 404:
+      raise RideWithGpsError("Unknown Route ID: %s" % route_id)
+    except socket.timeout as e:
+      # Timeout, let this pass:
+      pass
+  if not raw_json:
+    raise RideWithGpsError("No data from RideWithGPS after %d tries" % Max_Attempts)
+
+  try:
+    data = json.loads(raw_json)
+  except ValueError:
+    raise RideWithGpsError("Error decoding JSON output:\n %s" % raw_json)
+
+  # We can convert these into RWGPS_Entry objects pretty trivially, so we do it all here:
+  route_name = data['name']
+  rwgps_entries = []
+  for i, course_point in enumerate(data['course_points']):
+    Miles_Per_Meter = 0.000621371
+    description = "" # Called the 'note' by RWGPS
+    note        = "" # Called the 'description' by RWGPS
+    if 'n' in course_point:
+      description = course_point['n']
+    if 'description' in course_point:
+      note = course_point['description']
+    instruction = course_point['t']
+    # Distance is in meters, but we want our silly miles:
+    distance    = course_point['d'] * Miles_Per_Meter
+    rwgps_entries.append(RWGPS_Entry(instruction_str = instruction,
+                                     description_str = description,
+                                     absolute_distance = distance,
+                                     prev_absolute_distance = None, # WIll fill in below
+                                     next_absolute_distance = None, # Will fill in below
+                                     note_str = note))
+    if i > 0:
+      rwgps_entries[i - 1].next_absolute_distance = rwgps_entries[i].absolute_distance
+      rwgps_entries[i].prev_absolute_distance = rwgps_entries[i - 1].absolute_distance
+
+  route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in rwgps_entries],
+                    route_id,
+                    route_name)
+  return (new_etag, route)
+
+
 
 def getETagAndCuesheet_viaCSV(route_id, etag=None):
   '''
@@ -107,7 +190,7 @@ def getETagAndCuesheet_viaCSV(route_id, etag=None):
       # Timeout, let this pass:
       pass
   if not raw_csv:
-    raise Exception("No data from RideWithGPS after %d tries" % Max_Attempts)
+    raise RideWithGpsError("No data from RideWithGPS after %d tries" % Max_Attempts)
 
   # Read in CSV rows:
   reader = csv.DictReader(raw_csv.split("\n"),
