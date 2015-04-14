@@ -67,6 +67,24 @@ class LatexTestCase(unittest.TestCase):
       latex_code = latex.makeLatex(r)
       pdf_data = tex.latex2pdf(latex_code)
 
+  def test_emptyInstruction(self):
+    '''
+    Verify that empty descriptions / notes don't cause issues.
+    '''
+    _QuickRender(description = "", note = "")
+
+  def test_emptyNote(self):
+    '''
+    Verify that empty descriptions / notes don't cause issues.
+    '''
+    _QuickRender(description = "Desc", note = "")
+
+  def test_emptyDescription(self):
+    '''
+    Verify that empty descriptions / notes don't cause issues.
+    '''
+    _QuickRender(description = "", note = "Note")
+
   def test_customInstructionIsEscaped(self):
     # Verify the user can't slip any sneaky Latex through custom instructions:
     _QuickRender(instruction="\ %")

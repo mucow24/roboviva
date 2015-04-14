@@ -44,7 +44,7 @@ def handle_request(route_id):
   db_key  = str(route_id)
   cached_etag = None
   if db_key in hash_db:
-    cached_etag = hash_db[db_key]
+    cached_etag, timestamp = hash_db[db_key]
 
   # Query RideWithGPS. This method will return the current ETag, and, if the
   # current ETag is different from the one we have on file, the full cue data
@@ -136,7 +136,8 @@ def dump_cache():
     md5_sum, ts = hash_db[route_id]
     ents.append( (ts, route_id, md5_sum) )
 
-  ret  = "<table border=1>\n"
+  ret  = "Cache has %d entries\n" % len(hash_db)
+  ret += "<table border=1>\n"
   ret += "  <tr><th>route id</th><th>md5</th><th>age</th><th>Remove?</th></tr>\n"
   for timestamp, route_id, md5_sum in sorted(ents):
     ret += "  <tr>\n"
@@ -179,7 +180,10 @@ def purge_cache(delete_older_than):
   log.warning("[purge] starting: age: %s", delete_older_than)
   bytes_deleted   = 0
   bytes_remaining = 0
-  ret  = "<table border=1>\n"
+  ret = ""
+  ret += "Cache has %d entries\n" % len(hash_db)
+
+  ret += "<table border=1>\n"
   ret += "  <tr><th>route id</th><th>md5</th><th>age (s)</th><th>status</th></tr>\n"
   for route_id in hash_db:
     h, ts = hash_db[route_id]

@@ -114,7 +114,13 @@ def _entryToLatex(entry):
   if color:
     color_str = ur'\rowcolor%s' % color
   if entry.note:
-    note_str = ur' \newline \textbf{Note:} %s' % esc_note
+    # If the user left the description empty, but added a note, treat the note
+    # as if it were the description.  Otherwise, append the note as a an actual
+    # note after the description.
+    if esc_description.strip() == "":
+      note_str = esc_note
+    else:
+      note_str = ur' \newline \textbf{Note:} %s' % esc_note
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
