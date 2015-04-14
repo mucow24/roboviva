@@ -141,16 +141,19 @@ def makeLatex(route):
 
       Returns the Latex output generated from 'route', as a string.
   '''
-  ret = LatexHeader
   ents = route.entries
+  route_id = _escape("%s" % route.route_id)
+  route_name = _escape("%s" % route.route_name)
+  ret = _makeHeader(route_id, route_name)
   for ent in ents:
     ret = ret + _entryToLatex(ent) + "\n"
   ret = ret + LatexFooter
   return ret
 
-LatexHeader = unicode(r'''
+def _makeHeader(route_id, route_name=""):
+  header = unicode(r'''
 \documentclass[11pt]{article}
-\usepackage[left=0.25in,right=0.25in,top=0.25in,bottom=0.25in]{geometry}
+\usepackage[left=0.25in,right=0.25in,top=0.7in,bottom=0.25in]{geometry}
 \geometry{letterpaper}
 \usepackage{colortbl}
 \usepackage{supertabular}
@@ -159,22 +162,48 @@ LatexHeader = unicode(r'''
 \usepackage{fourier}
 \usepackage{bbding}
 \usepackage[alpine]{ifsym}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\fancyhf{}''')
+
+  header += unicode(r'''
+\lhead{\small{\emph{%s}}}
+\rhead{\small\emph{Route \#%s}}
+''') % (route_name, route_id)
+
+  header += unicode(r'''
+\fancyfoot[C]{\footnotesize{\emph{Page~\thepage~of~\pageref{LastPage}}}}
+\setlength{\footskip}{0.0in}
+\setlength{\headsep}{0.2in}
+
 \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
-  \renewcommand{\arraystretch}{1.1}
-  \twocolumn
-    \tabletail{\hline}
-      \tablelasttail{\hline}
-        \begin{supertabular}{|c|p{0.35in}|p{2.25in}|l|}
-
-        \hline
-        \rowcolor[gray]{0}
-        \textbf{\textcolor{white}{Go}}&\textbf{\textcolor{white}{At}}&\textbf{\textcolor{white}{On}}&\textbf{\textcolor{white}{For}}\\\hline
+\renewcommand{\arraystretch}{1.1}
+\twocolumn
+\tablehead{
+  \hline
+  \rowcolor[gray]{0}
+  \textbf{\textcolor{white}{Go}} &
+  \textbf{\textcolor{white}{At}} &
+  \textbf{\textcolor{white}{On}} &
+  \textbf{\textcolor{white}{For}} \\
+  \hline
+}
+\tabletail{\hline}
+\tablelasttail{\hline}
+\begin{center}
+  \begin{supertabular}{|c|p{0.35in}|p{2.4in}|l|}
+  \hline
 ''')
+
+  return header
 
 LatexFooter = unicode(r'''
 \end{supertabular}
+\end{center}
 \end{document}
 ''')
 
