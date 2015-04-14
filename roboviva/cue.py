@@ -112,3 +112,11 @@ class Route(object):
     self.route_id = route_id
     self.entries = entries
 
+  def __repr__(self):
+    ret = ""
+    ret += "Route:\n"
+    ret += "  Name: \"%s\"" % self.route_name
+    ret += "  Id:   %s" % self.route_id
+    for entry in self.entries:
+      ret += "    %s\n" % entry
+    return ret
