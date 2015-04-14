@@ -50,7 +50,7 @@ def handle_request(route_id):
   # current ETag is different from the one we have on file, the full cue data
   # for the route:
   try:
-    cur_etag, cur_route = roboviva.ridewithgps.getETagAndCuesheet_viaCSV(route_id, cached_etag)
+    cur_etag, cur_route = roboviva.ridewithgps.getETagAndCuesheet_viaJSON(route_id, cached_etag)
   except roboviva.ridewithgps.RideWithGpsError as e:
     log.warning("[request][%10d]: RideWithGPS error: %s", route_id, e)
     return flask.render_template('error.html', error=("'%s' is not a valid RideWithGPS Route :(" % route_id))
