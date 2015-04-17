@@ -64,7 +64,7 @@ def getEtagForCSV(route_id):
   print "etag: %s" % etag
   return etag
 
-def getETagAndCuesheet_viaJSON(route_id, etag=None):
+def getETagAndCuesheet_viaJSON(route_id, etag=None, api_key=None):
   '''
       Queries RideWithGPS for the cue data for 'route_id'. If 'etag' is
       non-None, then 'etag' is passed to the server in the 'If-None-Match' HTTP
@@ -80,10 +80,12 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None):
       etag     - The HTTP ETag header returned by the server the last time we
                  asked for this route, or "None" if this is a new route, or we
                  want a fresh copy.
+      api_key  - A RWGPS api_key to use when requesting the json. For now, this
+                 seems to be unnecessary, so passing 'None' is OK.
 
       Throws a RideWithGpsError in the event of a problem (invalid route id, etc.)
   '''
-  url = "http://ridewithgps.com/routes/%s.json" % route_id
+  url = "http://ridewithgps.com/routes/%s.json?api_key=%s&version=2" % (route_id, api_key)
   req = urllib2.Request(url)
   if etag:
     req.add_header("If-None-Match", etag)
@@ -116,10 +118,10 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None):
     raise RideWithGpsError("Error decoding JSON output:\n %s" % raw_json)
 
   # We can convert these into RWGPS_Entry objects pretty trivially, so we do it all here:
-  route_name = data['name']
+  route_name = data['route']['name']
   rwgps_entries = []
-  for i, course_point in enumerate(data['course_points']):
-    Miles_Per_Meter = 0.000621371
+  Miles_Per_Meter = 0.000621371
+  for i, course_point in enumerate(data['route']['course_points']):
     description = "" # Called the 'note' by RWGPS
     note        = "" # Called the 'description' by RWGPS
     if 'n' in course_point:
@@ -135,10 +137,23 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None):
                                      prev_absolute_distance = None, # WIll fill in below
                                      next_absolute_distance = None, # Will fill in below
                                      note_str = note))
+
     if i > 0:
       rwgps_entries[i - 1].next_absolute_distance = rwgps_entries[i].absolute_distance
       rwgps_entries[i].prev_absolute_distance = rwgps_entries[i - 1].absolute_distance
 
+  # As of API version 2, there is no "End of Route" entry, so we add one
+  # ourselves, for the "for" distance on the last cue entry is correct.
+  end_distance = data['route']['metrics']['distance']
+  rwgps_entries.append(RWGPS_Entry(instruction_str = "Generic",
+                                   description_str = "End of Route",
+                                   absolute_distance = end_distance * Miles_Per_Meter,
+                                   prev_absolute_distance = None,
+                                   next_absolute_distance = None,
+                                   note_str = None))
+  if len(rwgps_entries) > 1:
+    rwgps_entries[-1].prev_absolute_distance = rwgps_entries[-2].absolute_distance
+    rwgps_entries[-2].next_absolute_distance = rwgps_entries[-1].absolute_distance
   route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in rwgps_entries],
                     route_id,
                     route_name)
@@ -360,6 +375,9 @@ def _RWGPS_EntryToCueEntry(rwgps_entry):
   for_distance = None
   if rwgps_entry.next_absolute_distance:
     for_distance = rwgps_entry.next_absolute_distance - rwgps_entry.absolute_distance
+
+  if rwgps_entry.note_str is None:
+    rwgps_entry.note_str = ""
 
   return cue.Entry(instruction,
                    clean_desc,
