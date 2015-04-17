@@ -167,7 +167,7 @@ class RWGPSTestCase(unittest.TestCase):
     Route_Name    = "Roboviva Unit Test Route"
     Expected_ETag = "\"da24d5e8ad1646e77c8b6aeda89d292d\""
     Route_Length  = 0.5
-    Route_Climb   = 1
+    Route_Climb   = 16.
 
     # Note we do NOT pass in 'Expected_ETag', here, so we always get the full
     # set of cue data:

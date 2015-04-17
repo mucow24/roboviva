@@ -121,7 +121,7 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None, api_key=None):
   route_name = data['route']['name']
   rwgps_entries = []
   Miles_Per_Meter = 0.000621371192
-  Feet_Per_Meter  = 0.3048
+  Feet_Per_Meter  = 3.28084
 
   # The JSON data doesn't contain a "Start of Route" marker, so we add one manually:
   rwgps_entries.append(RWGPS_Entry(instruction_str = "Generic",
