@@ -153,7 +153,7 @@ def makeLatex(route):
 def _makeHeader(route_id, route_name=""):
   header = unicode(r'''
 \documentclass[11pt]{article}
-\usepackage[left=0.25in,right=0.25in,top=0.7in,bottom=0.25in]{geometry}
+\usepackage[left=0.20in,right=0.20in,top=0.7in,bottom=0.25in]{geometry}
 \geometry{letterpaper}
 \usepackage{colortbl}
 \usepackage{supertabular}
@@ -181,7 +181,7 @@ def _makeHeader(route_id, route_name=""):
 \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
-\renewcommand{\arraystretch}{1.1}
+\renewcommand{\arraystretch}{1.15}
 \twocolumn
 \tablehead{
   \hline
@@ -195,7 +195,7 @@ def _makeHeader(route_id, route_name=""):
 \tabletail{\hline}
 \tablelasttail{\hline}
 \begin{center}
-  \begin{supertabular}{|c|p{0.35in}|p{2.4in}|l|}
+  \begin{supertabular}{|c|p{0.30in}|p{2.25in}|l|}
   \hline
 ''')
 
