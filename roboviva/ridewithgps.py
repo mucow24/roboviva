@@ -120,7 +120,17 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None, api_key=None):
   # We can convert these into RWGPS_Entry objects pretty trivially, so we do it all here:
   route_name = data['route']['name']
   rwgps_entries = []
-  Miles_Per_Meter = 0.000621371
+  Miles_Per_Meter = 0.000621371192
+  Feet_Per_Meter  = 0.3048
+
+  # The JSON data doesn't contain a "Start of Route" marker, so we add one manually:
+  rwgps_entries.append(RWGPS_Entry(instruction_str = "Generic",
+                                   description_str = "Start of route",
+                                   absolute_distance = 0.0,
+                                   prev_absolute_distance = None,
+                                   next_absolute_distance = None,
+                                   note_str = None))
+
   for i, course_point in enumerate(data['route']['course_points']):
     description = "" # Called the 'note' by RWGPS
     note        = "" # Called the 'description' by RWGPS
@@ -137,26 +147,28 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None, api_key=None):
                                      prev_absolute_distance = None, # WIll fill in below
                                      next_absolute_distance = None, # Will fill in below
                                      note_str = note))
-
-    if i > 0:
-      rwgps_entries[i - 1].next_absolute_distance = rwgps_entries[i].absolute_distance
-      rwgps_entries[i].prev_absolute_distance = rwgps_entries[i - 1].absolute_distance
+    # This is always safe, since the "Start of route" entry guarantees [i - 1]
+    # is a valid index, here:
+    rwgps_entries[-1].prev_absolute_distance = rwgps_entries[-2].absolute_distance
+    rwgps_entries[-2].next_absolute_distance = rwgps_entries[-1].absolute_distance
 
   # As of API version 2, there is no "End of Route" entry, so we add one
   # ourselves, for the "for" distance on the last cue entry is correct.
-  end_distance = data['route']['metrics']['distance']
+  end_distance_mi = data['route']['metrics']['distance'] * Miles_Per_Meter
   rwgps_entries.append(RWGPS_Entry(instruction_str = "Generic",
-                                   description_str = "End of Route",
-                                   absolute_distance = end_distance * Miles_Per_Meter,
+                                   description_str = "End of route",
+                                   absolute_distance = end_distance_mi,
                                    prev_absolute_distance = None,
                                    next_absolute_distance = None,
                                    note_str = None))
-  if len(rwgps_entries) > 1:
-    rwgps_entries[-1].prev_absolute_distance = rwgps_entries[-2].absolute_distance
-    rwgps_entries[-2].next_absolute_distance = rwgps_entries[-1].absolute_distance
+  rwgps_entries[-1].prev_absolute_distance = rwgps_entries[-2].absolute_distance
+  rwgps_entries[-2].next_absolute_distance = rwgps_entries[-1].absolute_distance
+
   route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in rwgps_entries],
-                    route_id,
-                    route_name)
+                    route_id   = route_id,
+                    route_name = route_name,
+                    elevation_gain_ft = data['route']['metrics']['ele_gain'] * Feet_Per_Meter,
+                    length_mi = end_distance_mi)
   return (new_etag, route)
 
 
@@ -217,7 +229,9 @@ def getETagAndCuesheet_viaCSV(route_id, etag=None):
   entries = _rawCSVtoRWGPS_Entries(rows)
 
   # And then to cue.Entry objects:
-  route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in entries], route_id)
+  route = cue.Route([_RWGPS_EntryToCueEntry(entry) for entry in entries],
+          route_id = route_id,
+          length_mi = entries[-1].absolute_distance)
   return (new_etag, route)
 
 def _cleanDescription(description):

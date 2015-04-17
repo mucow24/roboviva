@@ -162,9 +162,59 @@ class RWGPSTestCase(unittest.TestCase):
     self.assertEqual(cue_ent.instruction, "Custom")
     self.assertEqual("Foo Bar Baz", cue_ent.description)
 
-  def test_RWGPSQueryAndParse(self):
+  def test_RWGPSQueryAndParse_JSON(self):
+    Route_Id      = "6260667"
+    Route_Name    = "Roboviva Unit Test Route"
+    Expected_ETag = "\"da24d5e8ad1646e77c8b6aeda89d292d\""
+    Route_Length  = 0.5
+    Route_Climb   = 1
+
+    # Note we do NOT pass in 'Expected_ETag', here, so we always get the full
+    # set of cue data:
+    etag, route = ridewithgps.getETagAndCuesheet_viaJSON(Route_Id)
+
+    if etag != Expected_ETag:
+      print "Queried RWGPS (route id %s):" % Route_Id
+      print "\tGot etag: %s" % etag
+      print "\tExp etag: %s" % Expected_ETag
+      print "Skipping end-to-end test."
+      self.skipTest("MD5 mismatch: expected %s, got %s (route id: %s)" % (Expected_ETag, etag, Route_Id))
+
+    self.assertEqual(Route_Id, route.id)
+    self.assertEqual(Route_Name, route.name)
+    self.assertAlmostEqual(Route_Length, route.length_mi, places = 1)
+    self.assertAlmostEqual(Route_Climb, route.elevation_gain_ft, places = 0)
+    cues = route.entries
+                      # Desc            Instruction            Modifier            Dist  For   Note
+    expected_cues = [("Start of route", cue.Instruction.NONE,  cue.Modifier.NONE,  0.0,  0.19, ""),
+                     ("A",              cue.Instruction.RIGHT, cue.Modifier.NONE,  0.19, 0.09, ""),
+                     ("B",              cue.Instruction.RIGHT, cue.Modifier.QUICK, 0.28, 0.19, "Test note B"),
+                     ("C",              "Custom Instruction",  cue.Modifier.NONE,  0.47, 0.08, ""),
+                     ("End of route",   cue.Instruction.NONE,  cue.Modifier.NONE,  0.55, None, "")]
+
+    for i, exp in enumerate(expected_cues):
+      desc, ins, mod, dist, for_dist, note = exp
+      self.assertEqual(desc,           cues[i].description)
+      self.assertEqual(ins,            cues[i].instruction)
+      self.assertEqual(mod,            cues[i].modifier)
+      self.assertAlmostEqual(dist,     cues[i].absolute_distance, places = 1)
+      self.assertAlmostEqual(for_dist, cues[i].for_distance, places = 1)
+      self.assertEqual(note,           cues[i].note)
+
+    # Finally, query RWHPS again, this time passing in Expected_ETag, to verify
+    # the call returns 'None' as expected:
+    etag, cues = ridewithgps.getETagAndCuesheet_viaJSON(Route_Id, Expected_ETag)
+    self.assertEqual(None, cues)
+    self.assertEqual(Expected_ETag, etag)
+
+  def test_RWGPSQueryAndParse_CSV(self):
     Route_Id      = "6260667"
     Expected_ETag = "\"fc3842ae134af2008092696c7b1af1fa\""
+    Route_Name    = None
+    Route_Length  = 0.55 # This is different than the "0.5" we compare to in
+                         # the JSON test, since this ends up being a
+                         # doubly-rounded number :(.
+    Route_Climb   = None
 
     # Note we do NOT pass in 'Expected_ETag', here, so we always get the full
     # set of cue data:
@@ -177,7 +227,11 @@ class RWGPSTestCase(unittest.TestCase):
       print "Skipping end-to-end test."
       self.skipTest("MD5 mismatch: expected %s, got %s (route id: %s)" % (Expected_ETag, etag, Route_Id))
 
-    self.assertEqual(Route_Id, route.route_id)
+    self.assertEqual(Route_Id, route.id)
+    self.assertEqual(Route_Name, route.name)
+    self.assertAlmostEqual(Route_Length, route.length_mi, places = 1)
+    self.assertAlmostEqual(Route_Climb, route.elevation_gain_ft, places = 0)
+
     cues = route.entries
                       # Desc            Instruction            Modifier            Dist  For   Note
     expected_cues = [("Start of route", cue.Instruction.NONE,  cue.Modifier.NONE,  0.0,  0.19, ""),

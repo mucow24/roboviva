@@ -142,15 +142,26 @@ def makeLatex(route):
       Returns the Latex output generated from 'route', as a string.
   '''
   ents = route.entries
-  route_id = _escape("%s" % route.route_id)
-  route_name = _escape("%s" % route.route_name)
-  ret = _makeHeader(route_id, route_name)
+  route_id = _escape("%s" % route.id)
+  route_name = _escape("%s" % route.name)
+  ret = _makeHeader(route)
   for ent in ents:
     ret = ret + _entryToLatex(ent) + "\n"
   ret = ret + LatexFooter
   return ret
 
-def _makeHeader(route_id, route_name=""):
+def _makeHeader(route):
+  '''
+  Generates the beginning of a Latex document, meaning everything from \documentclass to the beginning of the supertable.
+
+  route: a cue.Route object to use when filling in the header
+  '''
+
+  route_id = route.id
+  route_name = route.name
+  elevation_gain_ft = route.elevation_gain_ft
+  total_distance_mi = route.length_mi
+
   header = unicode(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.20in,right=0.20in,top=0.7in,bottom=0.25in]{geometry}
@@ -168,10 +179,30 @@ def _makeHeader(route_id, route_name=""):
 \pagestyle{fancy}
 \fancyhf{}''')
 
-  header += unicode(r'''
-\lhead{\small{\emph{%s}}}
-\rhead{\small\emph{Route \#%s}}
-''') % (route_name, route_id)
+  # Fill in left, right headers.
+  lhead = None
+  rhead = r"\emph{Route \#%s}" % route_id
+
+  # We stick the total distance + climb after the route title if it exists,
+  # otherwise we put it after the route #:
+  if elevation_gain_ft:
+    route_stats = "%.1f mi / %d ft" % (total_distance_mi, elevation_gain_ft)
+  else:
+    route_stats= "%.1f mi" % (total_distance_mi)
+
+  if route_name:
+    lhead = r"\emph{%s (%s)}" % (route_name, route_stats)
+  else:
+    # Stick stats after the right header:
+    rhead += r" \emph{(%s)}" % route_stats
+
+  if lhead:
+    header += unicode(r'''
+\lhead{\small %s}''' % lhead)
+
+  if rhead:
+    header += unicode(r'''
+\rhead{\small %s}''' % rhead)
 
   header += unicode(r'''
 \fancyfoot[C]{\footnotesize{\emph{Page~\thepage~of~\pageref{LastPage}}}}

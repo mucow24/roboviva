@@ -100,23 +100,34 @@ class Entry(object):
 class Route(object):
   '''Simple storage class representing a route. This is just a list of Entrys,
   plus some metadata (title, route #, etc.)'''
-  def __init__(self, entries, route_id, route_name=None):
+  def __init__(self,
+               entries,
+               route_id,
+               route_name = None,
+               elevation_gain_ft = None,
+               length_mi = None):
     '''
       Inits the storage members of the class:
 
       - entries:      A list of Entry objects
-      - route_id: The RWGPS route # for this route
+      - route_id:     The RWGPS route # for this route
       - route_name:   The name of this route (Optional)
+      - elevation_gain_ft : The amount of climb in this route, in ft (Optional)
+      - length_mi:    The total length of the route, in miles.
     '''
-    self.route_name   = route_name
-    self.route_id = route_id
+    self.name    = route_name
+    self.id      = route_id
     self.entries = entries
+    self.elevation_gain_ft = elevation_gain_ft
+    self.length_mi = length_mi
 
   def __repr__(self):
     ret = ""
     ret += "Route:\n"
-    ret += "  Name: \"%s\"" % self.route_name
-    ret += "  Id:   %s" % self.route_id
+    ret += "  Name:  \"%s\"" % self.name
+    ret += "  Id:    %s" % self.id
+    ret += "  Climb: %s ft" % self.elevation_gain_ft
+    ret += "  Length: %s mi" % self.length_mi
     for entry in self.entries:
       ret += "    %s\n" % entry
     return ret
