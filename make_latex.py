@@ -25,17 +25,11 @@ def main(argv):
     return 1
 
   route_id = int(argv[1])
-  print "Downloading route from ridewithgps...",
+  print "%% Downloading route from ridewithgps...",
   etag, cues = ridewithgps.getETagAndCuesheet_viaJSON(route_id)
-  print " Done [etag: %s]" % etag
-  print "Generating latex...",
+  print "%% Done [etag: %s]" % etag
   src = latex.makeLatex(cues)
-  print " Done."
-  filename = "%s.pdf" % route_id
-  print "Rendering PDF to '%s'..." % filename,
-  with open(filename, 'wb') as pdf_file:
-    pdf_file.write(tex.latex2pdf(src))
-  print " Done."
+  print src
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv))
