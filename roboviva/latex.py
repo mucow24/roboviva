@@ -186,15 +186,15 @@ def _makeHeader(route):
   # We stick the total distance + climb after the route title if it exists,
   # otherwise we put it after the route #:
   if elevation_gain_ft:
-    route_stats = "%.1f mi / %d ft" % (total_distance_mi, elevation_gain_ft)
+    route_stats = _escape("%.1f mi / %d ft" % (total_distance_mi, elevation_gain_ft))
   else:
-    route_stats= "%.1f mi" % (total_distance_mi)
+    route_stats= _escape("%.1f mi" % (total_distance_mi))
 
   if route_name:
-    lhead = r"\emph{%s (%s)}" % (route_name, route_stats)
+    lhead = _escape(r"\emph{%s (%s)}" % (route_name, route_stats))
   else:
     # Stick stats after the right header:
-    rhead += r" \emph{(%s)}" % route_stats
+    rhead += _escape(r" \emph{(%s)}" % route_stats)
 
   if lhead:
     header += unicode(r'''

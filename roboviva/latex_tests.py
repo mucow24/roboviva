@@ -30,7 +30,7 @@ def _QuickRender(instruction = cue.Instruction.NONE,
   Renders a single instruction to PDF.
   '''
   ent = [cue.Entry(instruction, description, abs_dist, note, modifier, for_dist, color)]
-  r   = cue.Route(ent, 123)
+  r   = cue.Route(ent, route_id=123, length_mi=0.0)
   latex_code = latex.makeLatex(r)
   pdf        = tex.latex2pdf(latex_code)
 
@@ -63,7 +63,7 @@ class LatexTestCase(unittest.TestCase):
           continue
         instruction = cue.Instruction.__dict__[i]
         ents.append(cue.Entry(instruction, r"Description", 0.0))
-      r = cue.Route(ents, 123)
+      r = cue.Route(ents, route_id=123, length_mi=0.0)
       latex_code = latex.makeLatex(r)
       pdf_data = tex.latex2pdf(latex_code)
 
@@ -159,7 +159,11 @@ class LatexTestCase(unittest.TestCase):
              cue.Entry(cue.Instruction.LEFT,
                       r"What **about *formatting***? **Does **it** work, too?**",
                       0.1)]
-    r = cue.Route(ents, 123)
+    r = cue.Route(ents,
+                  route_id=123,
+                  route_name=r"\terrible &oute Name \\ %%%",
+                  elevation_gain_ft=123.45,
+                  length_mi=123.456)
     latex_code = latex.makeLatex(r)
     pdf_data = tex.latex2pdf(latex_code)
 

@@ -102,18 +102,18 @@ class Route(object):
   plus some metadata (title, route #, etc.)'''
   def __init__(self,
                entries,
+               length_mi,
                route_id,
                route_name = None,
-               elevation_gain_ft = None,
-               length_mi = None):
+               elevation_gain_ft = None):
     '''
       Inits the storage members of the class:
 
       - entries:      A list of Entry objects
+      - length_mi:    The total length of the route, in miles.
       - route_id:     The RWGPS route # for this route
       - route_name:   The name of this route (Optional)
       - elevation_gain_ft : The amount of climb in this route, in ft (Optional)
-      - length_mi:    The total length of the route, in miles.
     '''
     self.name    = route_name
     self.id      = route_id
