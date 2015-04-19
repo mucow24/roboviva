@@ -22,7 +22,7 @@ class RobovivaTestCase(unittest.TestCase):
   def test_CacheAdd(self):
     # Generate a route, verify it ends up in the cache:
     Route_Id = "6260667"
-    Expected_ETag = "\"fc3842ae134af2008092696c7b1af1fa\""
+    Expected_ETag = "\"da24d5e8ad1646e77c8b6aeda89d292d\""
     self.app.get("/roboviva/routes/%s" % Route_Id)
     ret = self.app.get("/roboviva/cache")
     self.assertTrue(Route_Id in ret.data)
