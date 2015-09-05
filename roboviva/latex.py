@@ -97,7 +97,7 @@ def _entryColor(entry):
   if entry.color == cue.Color.YELLOW:
     color = ur'{yellow}'
   elif entry.color == cue.Color.GRAY:
-    color = ur'[gray]{0.7}'
+    color = ur'[gray]{0.8}'
   return color
 
 def _entryToLatex(entry):
