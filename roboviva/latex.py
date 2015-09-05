@@ -49,6 +49,7 @@ def _escape(text):
   r''' Escapes &, #, and other characters in 'text' so they don't break the
   latex render.'''
   ret = re.sub(r'\\([^\\]?)', r'\\textbackslash \1', text)
+  ret = ret.replace("_", r"\textunderscore ")
   ret = ret.replace("$", "\$")
   ret = ret.replace("#", "\#")
   ret = ret.replace("&", "\&")

@@ -94,7 +94,7 @@ class LatexTestCase(unittest.TestCase):
     Verify all characters that could cause trouble in the Latex rendering are
     escaped properly:
     '''
-    escape_test_desc = r'# & $ | < > { } \testcommand \\ %'
+    escape_test_desc = r'# & $ _ | < > { } \testcommand \\ %'
     _QuickRender(description = escape_test_desc)
 
 
@@ -117,18 +117,18 @@ class LatexTestCase(unittest.TestCase):
 
   def test_entryToLatex(self):
     # No color, no 'for', no note, no modifier:
-    desc = "description_string & **formatted**"
+    desc = "descriptionstring & **formatted**"
     ent = cue.Entry(cue.Instruction.RIGHT,
                     desc,
                     0.0,
                     note = "",
                     modifier = cue.Modifier.NONE,
                     for_distance = None)
-    expected = r' \textbf{R} &   0.0 & description_string \& \textbf{formatted} &  \\ \hline'
+    expected = r' \textbf{R} &   0.0 & descriptionstring \& \textbf{formatted} &  \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
 
     # color, 'for', note, and modifier:
-    desc = "description_string & **formatted**"
+    desc = "descriptionstring & **formatted**"
     ent = cue.Entry(cue.Instruction.LEFT,
                     desc,
                     0.0,
@@ -136,16 +136,16 @@ class LatexTestCase(unittest.TestCase):
                     modifier = cue.Modifier.QUICK,
                     for_distance = 12.34,
                     color = cue.Color.GRAY)
-    expected = r'\rowcolor[gray]{0.7} \textbf{QL} &   0.0 & description_string \& \textbf{formatted} \newline \textbf{Note:} \emph{formatted note} &  12.3 \\ \hline'
+    expected = r'\rowcolor[gray]{0.7} \textbf{QL} &   0.0 & descriptionstring \& \textbf{formatted} \newline \textbf{Note:} \emph{formatted note} &  12.3 \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
 
     # Custom description
-    desc = "description_string"
+    desc = "descriptionstring"
     ent = cue.Entry("Custom Instruction",
                     desc,
                     0.0,
                     for_distance = 12.34)
-    expected = r' \textbf{Custom Instruction} &   0.0 & description_string &  12.3 \\ \hline'
+    expected = r' \textbf{Custom Instruction} &   0.0 & descriptionstring &  12.3 \\ \hline'
     self.assertEqual(expected, latex._entryToLatex(ent))
 
   def test_latexRenderTest(self):
