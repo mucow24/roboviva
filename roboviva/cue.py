@@ -50,7 +50,7 @@ def ColorFromInstruction(instruction):
   '''
   if instruction in (Instruction.PIT, Instruction.DANGER):
     return Color.YELLOW
-  elif instruction in (Instruction.LEFT):
+  elif instruction in (Instruction.RIGHT):
     return Color.GRAY
   else:
     return Color.NONE
