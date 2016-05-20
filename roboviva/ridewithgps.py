@@ -16,6 +16,7 @@
 
 import csv
 import cue
+import cue_utils
 import hashlib
 import json
 import re
@@ -169,6 +170,8 @@ def getETagAndCuesheet_viaJSON(route_id, etag=None, api_key=None):
                     route_name = route_name,
                     elevation_gain_ft = data['route']['metrics']['ele_gain'] * Feet_Per_Meter,
                     length_mi = end_distance_mi)
+
+  cue_utils.AdjustStartAndEnd(route)
   return (new_etag, route)
 
 

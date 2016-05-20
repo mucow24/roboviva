@@ -127,7 +127,7 @@ class Route(object):
     ret += "  Name:  \"%s\"" % self.name
     ret += "  Id:    %s" % self.id
     ret += "  Climb: %s ft" % self.elevation_gain_ft
-    ret += "  Length: %s mi" % self.length_mi
+    ret += "  Length: %s mi\n" % self.length_mi
     for entry in self.entries:
       ret += "    %s\n" % entry
     return ret
