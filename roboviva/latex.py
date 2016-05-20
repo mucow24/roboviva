@@ -121,7 +121,7 @@ def _entryToLatex(entry):
     if esc_description.strip() == "":
       note_str = esc_note
     else:
-      note_str = ur' \newline \textbf{Note:} %s' % esc_note
+      note_str = ur' \newline \textit{%s}' % esc_note
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
