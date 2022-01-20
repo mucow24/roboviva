@@ -62,3 +62,6 @@ docs/_build/
 
 # OS X
 .DS_Store
+
+# Windows vim
+*~

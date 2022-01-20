@@ -18,16 +18,16 @@ import unittest
 import cue
 import cue_utils
 
-def CheckDistances(route):
+def CheckDistances(route: cue.Route) -> bool:
   for index, entry in enumerate(route.entries[0:-1]):
-    next_entry = route.entries[index + 1]
-    if (next_entry.absolute_distance != entry.absolute_distance + entry.for_distance):
-      print "Error: %s -> %s (%s, %s)" % (entry, next_entry, index, index + 1)
-      print route
-      return False
+    next_entry: cue.Entry = route.entries[index + 1]
+  if (next_entry.absolute_distance != entry.absolute_distance + entry.for_distance):
+    print("Error: {} -> {} ({}, {})".format(entry, next_entry, index, index + 1))
+    print(route)
+    return False
   return True
 
-def MakeRoute():
+def MakeRoute() -> cue.Route:
   entries = [ cue.Entry(cue.Instruction.RIGHT, "Start of route", 0.0, for_distance = 1.0),
               cue.Entry(cue.Instruction.RIGHT, "Entry 1", 1.0, for_distance = 0.5),
               cue.Entry(cue.Instruction.RIGHT, "Entry 2", 1.5, for_distance = 2.5),
@@ -44,7 +44,7 @@ class CueUtilsTestCase(unittest.TestCase):
     kStartIndex = 3
     route = MakeRoute()
     route.entries[kStartIndex].description = kStartDescription
-    route.entries[kStartIndex].instruction = 'start'
+    route.entries[kStartIndex].instruction = cue.Instruction.ROUTE_START
 
     cue_utils.AdjustStartAndEnd(route)
     self.assertEqual(5, len(route.entries))
@@ -60,7 +60,7 @@ class CueUtilsTestCase(unittest.TestCase):
     route = MakeRoute()
     kRouteLength = route.entries[-1].absolute_distance
     route.entries[kEndIndex].description = kEndDescription
-    route.entries[kEndIndex].instruction = 'end'
+    route.entries[kEndIndex].instruction = cue.Instruction.ROUTE_END
 
     cue_utils.AdjustStartAndEnd(route)
     self.assertEqual(5, len(route.entries))

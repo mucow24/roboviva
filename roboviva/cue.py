@@ -14,43 +14,53 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import csv
 import enum
+from typing import Optional
 
 '''The action a particular cue entry represents'''
-Instruction = enum.Enum(LEFT        = "L",
-                        RIGHT       = "R",
-                        STRAIGHT    = "S",
-                        PIT         = "PIT",
-                        DANGER      = "!",
-                        CROSSES     = "X",
-                        CAT_HC      = "CHC",
-                        CAT_1       = "C1",
-                        CAT_2       = "C2",
-                        CAT_3       = "C3",
-                        CAT_4       = "C4",
-                        CAT_5       = "C5",
-                        SUMMIT      = "^",
-                        FIRST_AID   = "+",
-                        NONE        = "")
+class Instruction2(enum.Enum):
+  LEFT        = 1
+  RIGHT       = 2
+
+class Instruction(enum.Enum):
+  LEFT        = "L"
+  RIGHT       = "R"
+  STRAIGHT    = "S"
+  PIT         = "PIT"
+  DANGER      = "!"
+  CROSSES     = "X"
+  CAT_HC      = "CHC"
+  CAT_1       = "C1"
+  CAT_2       = "C2"
+  CAT_3       = "C3"
+  CAT_4       = "C4"
+  CAT_5       = "C5"
+  SUMMIT      = "^"
+  FIRST_AID   = "+"
+  NONE        = ""
+  CUSTOM      = "CUSTOM"
+  ROUTE_START = "Start"
+  ROUTE_END   = "End"
 
 '''An instruction modifier. Only really makes sense for LEFT and RIGHT, at the moment'''
-Modifier = enum.Enum(NONE   = "",
-                     SLIGHT = "B",
-                     QUICK  = "Q")
+class Modifier(enum.Enum):
+  NONE   = ""
+  SLIGHT = "B"
+  QUICK  = "Q"
 
 '''The background color this cue entry should have'''
-Color = enum.Enum(NONE = "None",
-                  GRAY = "Gray",
-                  YELLOW = "Yellow")
+class Color(enum.Enum):
+  NONE = "None"
+  GRAY = "Gray"
+  YELLOW = "Yellow"
 
-def ColorFromInstruction(instruction):
+def ColorFromInstruction(instruction : Instruction):
   '''
   Given a cue.Instruction, return the cue.Color associated with it.
   '''
-  if instruction in (Instruction.PIT, Instruction.DANGER):
+  if instruction == Instruction.PIT or instruction == Instruction.DANGER:
     return Color.YELLOW
-  elif instruction in (Instruction.RIGHT):
+  elif instruction == Instruction.RIGHT:
     return Color.GRAY
   else:
     return Color.NONE
@@ -58,29 +68,32 @@ def ColorFromInstruction(instruction):
 class Entry(object):
   '''Simple storage class representing a single cue sheet entry. Nothing fancy.'''
   def __init__(self,
-              instruction,
-              description,
-              absolute_distance,
-              note         = "",
-              modifier     = Modifier.NONE,
-              for_distance = None,
-              color        = Color.NONE):
+              instruction: Instruction,
+              description: str,
+              absolute_distance: float,
+              note: str = "",
+              modifier: Modifier = Modifier.NONE,
+              for_distance: Optional[float] = None,
+              color: Color = Color.NONE,
+              custom_instruction: Optional[str] = None):
     ''' Inits a CueEntry.
-        instruction       - The entry's Instruction (see above)
-        description       - The entry's 'action' (e.g., 'Turn right on Pine St')
-        absolute_distance - How far this entry is from the ride's start (miles)
-        note              - Optional. Any additional notes on this entry.
-        modifier          - Optional. A Modifier to apply to the Instruction.
-        for_distance      - Optional. How long from this entry to the next entry.
-        color             - Optional. The color of this cue entry.
+        instruction        - The entry's Instruction (see above)
+        description        - The entry's 'action' (e.g., 'Turn right on Pine St')
+        absolute_distance  - How far this entry is from the ride's start (miles)
+        note               - Optional. Any additional notes on this entry.
+        modifier           - Optional. A Modifier to apply to the Instruction.
+        for_distance       - Optional. How long from this entry to the next entry.
+        color              - Optional. The color of this cue entry.
+        custom_instruction - Required only if instruction == Instruction.CUSTOM.
     '''
-    self.instruction       = instruction
-    self.description       = description
-    self.absolute_distance = float(absolute_distance)
-    self.note              = note
-    self.modifier          = modifier
-    self.for_distance      = for_distance
-    self.color             = color
+    self.instruction: Instruction = instruction
+    self.description: str = description
+    self.absolute_distance: float = absolute_distance
+    self.note: str = note
+    self.modifier: Modifier = modifier
+    self.for_distance: Optional[float] = for_distance
+    self.color: Color = color
+    self.custom_instruction: Optional[str] = custom_instruction
 
   def __repr__(self):
     for_str = ""
@@ -89,8 +102,9 @@ class Entry(object):
     else:
       for_str = "     "
 
-    return "Entry[%s%s | %5.2f | %s | %s | %s | %s]" % (self.modifier,
+    return "Entry[%s%s (%s) | %5.2f | %s | %s | %s | %s]" % (self.modifier,
                                                    self.instruction,
+                                                   self.custom_instruction,
                                                    self.absolute_distance,
                                                    for_str,
                                                    self.description,

@@ -16,7 +16,7 @@
 
 import cue
 
-def AdjustStartAndEnd(route):
+def AdjustStartAndEnd(route : cue.Route):
   '''
   Scans the Route 'route' for entries tagged with [start] and [end] in their
   description. If found, these replace the default "Start of route" and "End of
@@ -25,7 +25,7 @@ def AdjustStartAndEnd(route):
   'route' is modified in-place.
   '''
   for index, entry in enumerate(route.entries):
-    if 'start' == entry.instruction.lower():
+    if entry.instruction == cue.Instruction.ROUTE_START:
       entry.absolute_distance = 0.0
       entry.for_distance = route.entries[1].absolute_distance
       entry.instruction = cue.Instruction.NONE
@@ -34,7 +34,7 @@ def AdjustStartAndEnd(route):
       next_entry = route.entries[index + 1]
       prev_entry.for_distance = next_entry.absolute_distance - prev_entry.absolute_distance
       del route.entries[index]
-    elif 'end' == entry.instruction.lower() and index != len(route.entries) - 1:
+    elif entry.instruction == cue.Instruction.ROUTE_END:
       last_entry = route.entries[-1]
       penultimate_entry = route.entries[-2]
       penultimate_entry.for_distance = \
