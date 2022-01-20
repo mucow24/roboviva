@@ -25,23 +25,27 @@ def AdjustStartAndEnd(route : cue.Route):
   'route' is modified in-place.
   '''
   for index, entry in enumerate(route.entries):
-    if entry.instruction == cue.Instruction.ROUTE_START:
+    if entry.instruction != cue.Instruction.CUSTOM:
+      continue
+    if entry.custom_instruction.lower() == 'start':
       entry.absolute_distance = 0.0
       entry.for_distance = route.entries[1].absolute_distance
-      entry.instruction = cue.Instruction.NONE
+      entry.instruction = cue.Instruction.ROUTE_START
+      entry.custom_instruction = None
       route.entries[0] = entry
       prev_entry = route.entries[index - 1]
       next_entry = route.entries[index + 1]
       prev_entry.for_distance = next_entry.absolute_distance - prev_entry.absolute_distance
       del route.entries[index]
-    elif entry.instruction == cue.Instruction.ROUTE_END:
+    elif entry.custom_instruction.lower() == 'end':
       last_entry = route.entries[-1]
       penultimate_entry = route.entries[-2]
       penultimate_entry.for_distance = \
           last_entry.absolute_distance - penultimate_entry.absolute_distance
       entry.absolute_distance = last_entry.absolute_distance
       entry.for_distance = None
-      entry.instruction = cue.Instruction.NONE
+      entry.instruction = cue.Instruction.ROUTE_END
+      entry.custom_instruction = None # ROUTE_END covers this
       route.entries[-1] = entry
       prev_entry = route.entries[index - 1]
       next_entry = route.entries[index + 1]

@@ -40,35 +40,35 @@ class CueUtilsTestCase(unittest.TestCase):
   '''Tests for the cue_utils library'''
 
   def test_AdjustStartAndEnd_startOnly(self):
-    kStartDescription = "foo"
     kStartIndex = 3
     route = MakeRoute()
-    route.entries[kStartIndex].description = kStartDescription
-    route.entries[kStartIndex].instruction = cue.Instruction.ROUTE_START
+    route.entries[kStartIndex].description = "Foo"
+    route.entries[kStartIndex].instruction = cue.Instruction.CUSTOM
+    route.entries[kStartIndex].custom_instruction = 'Start'
 
     cue_utils.AdjustStartAndEnd(route)
     self.assertEqual(5, len(route.entries))
-    self.assertEqual(kStartDescription, route.entries[0].description)
+    self.assertEqual("Foo", route.entries[0].description)
     self.assertEqual(0.0, route.entries[0].absolute_distance)
     self.assertEqual(route.entries[1].absolute_distance, route.entries[0].for_distance)
-    self.assertEqual(cue.Instruction.NONE, route.entries[0].instruction)
+    self.assertEqual(cue.Instruction.ROUTE_START, route.entries[0].instruction)
     self.assertTrue(CheckDistances(route))
 
   def test_AdjustStartAndEnd_endOnly(self):
-    kEndDescription = "foo"
     kEndIndex = 3
     route = MakeRoute()
     kRouteLength = route.entries[-1].absolute_distance
-    route.entries[kEndIndex].description = kEndDescription
-    route.entries[kEndIndex].instruction = cue.Instruction.ROUTE_END
+    route.entries[kEndIndex].description = "Foo"
+    route.entries[kEndIndex].instruction = cue.Instruction.CUSTOM
+    route.entries[kEndIndex].custom_instruction = "End"
 
     cue_utils.AdjustStartAndEnd(route)
     self.assertEqual(5, len(route.entries))
-    self.assertEqual(kEndDescription, route.entries[-1].description)
+    self.assertEqual("Foo", route.entries[-1].description)
     self.assertTrue(CheckDistances(route))
     self.assertEqual(kRouteLength, route.entries[-1].absolute_distance)
     self.assertEqual(None, route.entries[-1].for_distance)
-    self.assertEqual(cue.Instruction.NONE, route.entries[-1].instruction)
+    self.assertEqual(cue.Instruction.ROUTE_END, route.entries[-1].instruction)
 
 if __name__ == '__main__':
   unittest.main()
