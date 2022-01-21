@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cue
-import re
+from . import cue
+import regex as re
 
 def _makeClimb(climb_type):
   '''Very simple utility method -- provides a common way to specify climb types'''
@@ -48,6 +48,7 @@ def _instructionToLatex(instruction, modifier):
 def _escape(text):
   r''' Escapes &, #, and other characters in 'text' so they don't break the
   latex render.'''
+  text = str(text)
   ret = re.sub(r'\\([^\\]?)', r'\\textbackslash \1', text)
   ret = ret.replace("_", r"\textunderscore ")
   ret = ret.replace("$", "\$")
@@ -66,8 +67,8 @@ def _format(text):
   turning it into \emph and \textbf, accordingly.'''
 
   # Step 0: Escape any whitespace-delimited *'s and **'s:
-  text = re.sub(ur'\s\*\s', ur' \* ', text)
-  text = re.sub(ur'\s\*\*\s', ur' \*\* ', text)
+  text = re.sub(r'\s\*\s', r' \* ', text)
+  text = re.sub(r'\s\*\*\s', r' \*\* ', text)
 
   # Do this in two passes. Each pass will replace **...** with \textbf{...},
   # and *...* with \emph{...}, where "..." DOES NOT CONTAIN ANY NESTED **...**
@@ -77,15 +78,15 @@ def _format(text):
   # Screw 'em :)
 
   Num_Passes = 2
-  for p in xrange(Num_Passes):
-    text = re.sub(ur'(\*\*)(?!\s)((\\.|[^\\\*])*?[^\s\\])\1',
-                  ur'\\textbf{\2}',
+  for p in range(Num_Passes):
+    text = re.sub(r'(\*\*)(?!\s)((\\.|[^\\\*])*?[^\s\\])\1',
+                  r'\\textbf{\2}',
                   text)
-    text = re.sub(ur'\*(?!\s)((\\.|[^\\\*])*?[^\s\\*])\*',
-                  ur'\emph{\1}',
+    text = re.sub(r'\*(?!\s)((\\.|[^\\\*])*?[^\s\\*])\*',
+                  r'\emph{\1}',
                   text)
   # Finally, un-escape any escaped *'s:
-  text = re.sub(ur'\\(\*|_)', ur'\1', text)
+  text = re.sub(r'\\(\*|_)', r'\1', text)
   return text
 
 def _entryColor(entry):
@@ -95,9 +96,9 @@ def _entryColor(entry):
   # Figure out row color:
   color = None
   if entry.color == cue.Color.YELLOW:
-    color = ur'{yellow}'
+    color = r'{yellow}'
   elif entry.color == cue.Color.GRAY:
-    color = ur'[gray]{0.8}'
+    color = r'[gray]{0.8}'
   return color
 
 def _entryToLatex(entry):
@@ -113,7 +114,7 @@ def _entryToLatex(entry):
   esc_description = _escape(entry.description)
 
   if color:
-    color_str = ur'\rowcolor%s' % color
+    color_str = r'\rowcolor%s' % color
   if entry.note:
     # If the user left the description empty, but added a note, treat the note
     # as if it were the description.  Otherwise, append the note as a an actual
@@ -121,7 +122,7 @@ def _entryToLatex(entry):
     if esc_description.strip() == "":
       note_str = esc_note
     else:
-      note_str = ur' \newline \textit{%s}' % esc_note
+      note_str = r' \newline \textit{%s}' % esc_note
   if entry.for_distance:
     for_str = "%5.1f" % entry.for_distance
 
@@ -163,7 +164,7 @@ def _makeHeader(route):
   elevation_gain_ft = route.elevation_gain_ft
   total_distance_mi = route.length_mi
 
-  header = unicode(r'''
+  header = str(r'''
 \documentclass[11pt]{article}
 \usepackage[left=0.20in,right=0.20in,top=0.7in,bottom=0.25in]{geometry}
 \geometry{letterpaper}
@@ -198,14 +199,14 @@ def _makeHeader(route):
     rhead += r" \emph{(%s)}" % route_stats_esc
 
   if lhead:
-    header += unicode(r'''
+    header += str(r'''
 \lhead{\small %s}''' % lhead)
 
   if rhead:
-    header += unicode(r'''
+    header += str(r'''
 \rhead{\small %s}''' % rhead)
 
-  header += unicode(r'''
+  header += str(r'''
 \fancyfoot[C]{\footnotesize{\emph{Page~\thepage~of~\pageref{LastPage}}}}
 \setlength{\footskip}{0.0in}
 \setlength{\headsep}{0.2in}
@@ -233,7 +234,7 @@ def _makeHeader(route):
 
   return header
 
-LatexFooter = unicode(r'''
+LatexFooter = str(r'''
 \end{supertabular}
 \end{center}
 \end{document}

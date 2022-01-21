@@ -18,8 +18,7 @@ import flask
 import flask_shelve
 
 import roboviva.ridewithgps
-import roboviva.latex
-import roboviva.tex
+import roboviva.renderer
 
 import os
 import logging
@@ -72,36 +71,21 @@ def handle_request(route_id):
       log.info("[request][%10d]: replace: %s -> %s",
                route_id, cached_etag, cur_etag)
 
-    # Step three, make the latex:
+    # Step three, make the PDF:
     try:
-      latex = roboviva.latex.makeLatex(cur_route)
+      cache_dir = flask.current_app.config['PDF_CACHE_DIR']
+      pdf_filename = "%s.pdf" % (route_id)
+      pdf_filepath = os.path.join(cache_dir, pdf_filename)
+      roboviva.renderer.DummyRenderer.MakePDF(cur_route, pdf_filepath)
     except Exception as e:
-      log.error("[request][%10d]: Error generating latex: %s\n cue:\n %s",
+      log.error("[request][%10d]: Error rendering PDF: %s\n cue:\n %s",
           route_id, e, cur_route)
+      print("DEBUG REMOVE ME")
+      raise e
       return flask.render_template('error.html',
                                    error = "Internal Error :(",
                                    meditation = "{Guru Meditation: 0xBA - Cue Parsing Failed}")
 
-    # Step four, render the pdf:
-    try:
-      pdf_data = roboviva.tex.latex2pdf(latex)
-    except Exception as e:
-      log.error("[request][%10d]: Error generating PDF\n latex: \n %s\n error:\n%s",
-          route_id, latex, e)
-      return flask.render_template(
-          'error.html',
-          error = "Internal Error :(",
-          meditation = "{Guru Meditation: 0xFF - Error Rendering PDF}")
-
-    # Step five, write it:
-    cache_dir = flask.current_app.config['PDF_CACHE_DIR']
-    pdf_filename = "%s.pdf" % (route_id)
-    pdf_filepath = os.path.join(cache_dir, pdf_filename)
-    try:
-      with open(pdf_filepath, 'wb') as pdffile:
-        pdffile.write(roboviva.tex.latex2pdf(latex))
-    except Exception as e:
-      log.error("[request][%10d]: Error writing pdf to %s: %s", route_id, pdf_filepath, e)
       return flask.render_template(
           'error.html',
           error = "Internal Error :(",
@@ -130,7 +114,7 @@ def get_pdf(route_id):
 
 @blueprint.route('/cache')
 def dump_cache():
-  hash_db = flask.ext.shelve.get_shelve('c')
+  hash_db = flask_shelve.get_shelve('c')
   ents = []
   for route_id in hash_db:
     md5_sum, ts = hash_db[route_id]
@@ -162,7 +146,7 @@ def dump_cache():
 
 @blueprint.route('/cache/remove/<int:route_id>')
 def remove_route(route_id):
-  hash_db = flask.ext.shelve.get_shelve('c')
+  hash_db = flask_shelve.get_shelve('c')
   ret = ""
   db_key = str(route_id)
   if db_key in hash_db:
@@ -176,7 +160,7 @@ def remove_route(route_id):
 def purge_cache(delete_older_than):
   log = flask.current_app.logger
   cache_dir = flask.current_app.config['PDF_CACHE_DIR']
-  hash_db = flask.ext.shelve.get_shelve('c')
+  hash_db = flask_shelve.get_shelve('c')
   log.warning("[purge] starting: age: %s", delete_older_than)
   bytes_deleted   = 0
   bytes_remaining = 0

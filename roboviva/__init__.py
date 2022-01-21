@@ -15,17 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import Flask
-from flask_shelve import shelve
+import flask_shelve 
 from .views import blueprint
-from .cue import cue
+import roboviva.cue as cue
 
 
 import sys
 import logging
-
-# Get ourselves into utf8 mode, so we don't have ascii / unicode headaches:
-reload(sys)
-sys.setdefaultencoding("utf8")
+import importlib
 
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
@@ -37,4 +34,4 @@ if not app.debug:
   app.logger.addHandler(logging.StreamHandler())
   app.logger.setLevel(logging.WARN)
 
-shelve.init_app(app)
+flask_shelve.init_app(app)
