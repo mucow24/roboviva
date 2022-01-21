@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import flask
-import flask.ext
+import flask_shelve
 
 import roboviva.ridewithgps
 import roboviva.latex
@@ -40,7 +40,7 @@ def handle_request(route_id):
   # Roboviva uses the HTTP ETag header to determine if it's worth
   # re-downloading the route information from RideWithGPS, so step one is
   # determining if we have an ETag already on hand:
-  hash_db = flask.ext.shelve.get_shelve('c')
+  hash_db = flask_shelve.get_shelve('c')
   db_key  = str(route_id)
   cached_etag = None
   if db_key in hash_db:

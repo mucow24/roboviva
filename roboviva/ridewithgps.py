@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cue
-import cue_utils
+import roboviva.cue as cue
+import roboviva.cue_utils as cue_utils
 import hashlib
 import json
 import re
