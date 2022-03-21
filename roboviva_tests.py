@@ -17,7 +17,6 @@ class RobovivaTestCase(unittest.TestCase):
   def test_Empty(self):
     # Verify cache is empty at launch:
     ret = self.app.get("/roboviva/cache")
-    print(ret)
     self.assertTrue('Cache has 0 entries' in str(ret.data))
 
   def test_CacheAdd(self):
@@ -28,7 +27,6 @@ class RobovivaTestCase(unittest.TestCase):
     Expected_ETag = "W/\"5e668792f4c8bd376091dd89f3648698\""
     self.app.get("/roboviva/routes/%s" % Route_Id)
     ret = self.app.get("/roboviva/cache")
-    print(ret.data)
     self.assertTrue(Route_Id in str(ret.data))
     self.assertTrue(Expected_ETag in str(ret.data))
 
