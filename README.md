@@ -8,3 +8,6 @@ Convert RideWithGPS Cue .csv's into a nice PDF
  - 'python3' branch is beta code; in addition to using more modern python 3, it also uses Reportlab as a rendering backend. This is a big deal since Reportlab is native python through and through, making installation and deployment much, much simpler. Basic cuesheet rendering is in place, but some of the more advanced features like inline formatting aren't there yet.
 
 
+Current development goal (March 2022) is to flesh out the reportlab-based version and get it into a state where it's trivally deployable as a Flask application by anyone.
+
+
