@@ -104,9 +104,9 @@ class LatexTestCase(unittest.TestCase):
     graycolor_ent   = cue.Entry(cue.Instruction.NONE, "", 0.0, color = cue.Color.GRAY)
     yellowcolor_ent = cue.Entry(cue.Instruction.NONE, "", 0.0, color = cue.Color.YELLOW)
 
-    self.assertEqual(ur'{yellow}',
+    self.assertEqual(r'{yellow}',
                      latex._entryColor(yellowcolor_ent))
-    self.assertEqual(ur'[gray]{0.7}',
+    self.assertEqual(r'[gray]{0.7}',
                      latex._entryColor(graycolor_ent))
     self.assertEqual(None,
                      latex._entryColor(nocolor_ent))
