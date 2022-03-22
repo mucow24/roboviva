@@ -18,29 +18,25 @@ import enum
 from typing import Optional
 
 '''The action a particular cue entry represents'''
-class Instruction2(enum.Enum):
-  LEFT        = 1
-  RIGHT       = 2
-
 class Instruction(enum.Enum):
   LEFT        = "L"
   RIGHT       = "R"
   STRAIGHT    = "S"
   PIT         = "PIT"
-  DANGER      = "!"
+  DANGER      = "!!!"
   CROSSES     = "X"
-  CAT_HC      = "CHC"
+  CAT_HC      = "HC"
   CAT_1       = "C1"
   CAT_2       = "C2"
   CAT_3       = "C3"
   CAT_4       = "C4"
   CAT_5       = "C5"
-  SUMMIT      = "^"
+  SUMMIT      = "Top"
   FIRST_AID   = "+"
   NONE        = ""
   CUSTOM      = "CUSTOM"
-  ROUTE_START = "Start"
-  ROUTE_END   = "End"
+  ROUTE_START = ""
+  ROUTE_END   = ""
 
 '''An instruction modifier. Only really makes sense for LEFT and RIGHT, at the moment'''
 class Modifier(enum.Enum):

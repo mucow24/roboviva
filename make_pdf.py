@@ -18,24 +18,22 @@ import sys
 from roboviva import ridewithgps
 from roboviva import latex
 from roboviva import tex
+from roboviva import reportlab_renderer
 
 def main(argv):
   if len(argv) != 2:
-    print "Usage: %s route_id" % argv[0]
+    print("Usage: {} route_id".format(argv[0]))
     return 1
 
   route_id = int(argv[1])
-  print "Downloading route from ridewithgps...",
+  print("Downloading route #{} from ridewithgps...".format(route_id), end=''),
   etag, cues = ridewithgps.getETagAndCuesheet_viaJSON(route_id)
-  print " Done [etag: %s]" % etag
-  print "Generating latex...",
-  src = latex.makeLatex(cues)
-  print " Done."
+  print(" Done [etag: {}]".format(etag))
+
   filename = "%s.pdf" % route_id
-  print "Rendering PDF to '%s'..." % filename,
-  with open(filename, 'wb') as pdf_file:
-    pdf_file.write(tex.latex2pdf(src))
-  print " Done."
+  print("Generating latex and rendering to {}...".format(filename), end=''),
+  reportlab_renderer.ReportLabRenderer.MakePDF(cues, filename)
+  print("Done.")
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv))
