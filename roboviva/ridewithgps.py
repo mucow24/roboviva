@@ -280,6 +280,11 @@ def _RWGPS_EntryToCueEntry(rwgps_entry):
     instruction = cue.Instruction.CUSTOM
     modifier    = cue.Modifier.NONE
 
+  # Unknown entry types map to CUSTOM, but might not contain a [custom instruction];
+  # add a blank one so we don't have CUSTOM instructions without custom_instructions.
+  if (instruction == cue.Instruction.CUSTOM) and custom_instruction == None:
+      custom_instruction = ""
+
   clean_desc  = _cleanDescription(rwgps_entry.description_str)
 
   for_distance = None

@@ -27,6 +27,11 @@ def AdjustStartAndEnd(route : cue.Route):
   for index, entry in enumerate(route.entries):
     if entry.instruction != cue.Instruction.CUSTOM:
       continue
+    if entry.custom_instruction == None:
+        # Shouldn't happen, but if it does, skip.
+        print("Uh-oh, entry is of type CUSTOM but has no instruction!?")
+        print(entry)
+        continue
     if entry.custom_instruction.lower() == 'start':
       entry.absolute_distance = 0.0
       entry.for_distance = route.entries[1].absolute_distance

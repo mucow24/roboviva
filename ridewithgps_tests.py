@@ -45,6 +45,20 @@ class RWGPSTestCase(unittest.TestCase):
     for s in ins:
       self.assertEqual(ins[s], ridewithgps._instructionStrToCueInstruction(s))
 
+  def test_RWGPSUnknownEntryType(self):
+    '''Make sure we don't barf out if RWGPS adds new instructions'''
+    rwgps_entry = ridewithgps.RWGPS_Entry(instruction_str        = "XXX",
+                                          description_str        = "Slight left",
+                                          absolute_distance      = 10.0,
+                                          prev_absolute_distance = 9.0,
+                                          next_absolute_distance = 11.0,
+                                          note_str               = "")
+    cue_ent = ridewithgps._RWGPS_EntryToCueEntry(rwgps_entry)
+    print(cue_ent) 
+    self.assertEqual(cue.Instruction.CUSTOM, cue_ent.instruction)
+    self.assertNotEqual(None, cue_ent.custom_instruction)
+
+
   def test_getModifierFromRWGPSEntry(self):
     slight_ent = ridewithgps.RWGPS_Entry(instruction_str        = "Left",
                                          description_str        = "Slight left",
