@@ -19,6 +19,7 @@ import flask_shelve
 
 import roboviva.ridewithgps
 import roboviva.renderer
+import roboviva.reportlab_renderer
 
 import os
 import logging
@@ -76,11 +77,10 @@ def handle_request(route_id):
       cache_dir = flask.current_app.config['PDF_CACHE_DIR']
       pdf_filename = "%s.pdf" % (route_id)
       pdf_filepath = os.path.join(cache_dir, pdf_filename)
-      roboviva.renderer.DummyRenderer.MakePDF(cur_route, pdf_filepath)
+      roboviva.reportlab_renderer.ReportLabRenderer.MakePDF(cur_route, pdf_filepath)
     except Exception as e:
       log.error("[request][%10d]: Error rendering PDF: %s\n cue:\n %s",
           route_id, e, cur_route)
-      print("DEBUG REMOVE ME")
       raise e
       return flask.render_template('error.html',
                                    error = "Internal Error :(",
