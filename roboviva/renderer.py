@@ -19,16 +19,6 @@ class LatexRenderer(object):
       with open(pdf_filepath, 'wb') as pdffile:
           pdffile.write(pdf_data)
 
-
-
-class ReportLabRenderer(object):
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def MakePDF(route: roboviva.cue.Route, pdf_file_path: str):
-      pass
-
 class DummyRenderer(object):
     @staticmethod
     def MakePDF(route: roboviva.cue.Route, pdf_file_path: str):
