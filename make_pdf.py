@@ -31,7 +31,7 @@ def main(argv):
   print(" Done [etag: {}]".format(etag))
 
   filename = "%s.pdf" % route_id
-  print("Generating latex and rendering to {}...".format(filename), end=''),
+  print("Rendering to {}...".format(filename), end=''),
   reportlab_renderer.ReportLabRenderer.MakePDF(cues, filename)
   print("Done.")
 
