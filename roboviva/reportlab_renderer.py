@@ -16,6 +16,7 @@ import datetime
 import reportlab.pdfgen as pdfgen
 import copy
 import sys
+import re
 
 
 import csv
@@ -55,9 +56,9 @@ class ReportLabRenderer(object):
           for_distance_str = ""
           if entry.for_distance:
             for_distance_str = "{:0.1f}".format(entry.for_distance)
-          row.append(Paragraph("<b>{}</b>".format(instruction_str), instruction_style))
+          row.append(Paragraph("<b>{}</b>".format(_Escape(instruction_str)), instruction_style))
           row.append(Paragraph("{:0.1f}".format(entry.absolute_distance), row_style))
-          row.append(Paragraph(entry.description, row_style))
+          row.append(Paragraph(_Escape(entry.description), row_style))
           row.append(Paragraph(for_distance_str, row_style))
           rows.append(row)
     
@@ -102,6 +103,17 @@ def EntryToInstructionStr(entry: cue.Entry) -> str:
       ret += entry.modifier.value
     ret += entry.instruction.value
   return ret
+
+def _Escape(s: str) -> str:
+    s = s.replace("<", "&lt;")
+    s = s.replace(">", "&gt;")
+    # Markdown style **bold** and *italic*. The regexes below aren't perfect but they're good enough.
+    # Basically just looking for "**(not whitespace) ... stuff ... **" and the * equivalent.
+    s = re.sub(r'\*\*([^\s])([^\*]*)\*\*', r'<b>\1\2</b>', s)
+    s = re.sub(r'\*([^\s])([^\*]*)\*', r'<i>\1\2</i>', s)
+    return s
+
+
 
 
 def MakeRandomRoute(num_entries, name = "My Rad Route", route_id = 1234, elevation_ft = 2000):
