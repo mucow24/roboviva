@@ -16,8 +16,6 @@
 
 import sys
 from roboviva import ridewithgps
-from roboviva import latex
-from roboviva import tex
 from roboviva import reportlab_renderer
 
 def main(argv):

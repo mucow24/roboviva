@@ -17,7 +17,6 @@
 import unittest
 from roboviva import ridewithgps
 from roboviva import cue
-import roboviva.tex
 
 class RWGPSTestCase(unittest.TestCase):
   '''Tests for Roboviva's RWGPS-facing functions'''
