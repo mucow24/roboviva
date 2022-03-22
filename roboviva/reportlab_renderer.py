@@ -108,9 +108,16 @@ def _Escape(s: str) -> str:
     s = s.replace("<", "&lt;")
     s = s.replace(">", "&gt;")
     # Markdown style **bold** and *italic*. The regexes below aren't perfect but they're good enough.
-    # Basically just looking for "**(not whitespace) ... stuff ... **" and the * equivalent.
-    s = re.sub(r'\*\*([^\s])([^\*]*)\*\*', r'<b>\1\2</b>', s)
-    s = re.sub(r'\*([^\s])([^\*]*)\*', r'<i>\1\2</i>', s)
+    # Basically just looking for "(whitespace)**(not whitespace)(stuff that's not a '*')**" and the * equivalent.
+    # We do this twice, to handle one **level of *nesting* if need be**.
+    # **bold**
+    s = re.sub(r'(^|\s)\*\*([^\s\*])([^\*]*)\*\*', r'\1<b>\2\3</b>', s)
+    # *italic*
+    s = re.sub(r'(^|\s)\*([^\s\*])([^\*]*)\*', r'\1<i>\2\3</i>', s)
+    # **bold**
+    s = re.sub(r'(^|\s)\*\*([^\s\*])([^\*]*)\*\*', r'\1<b>\2\3</b>', s)
+    # *italic*
+    s = re.sub(r'(^|\s)\*([^\s\*])([^\*]*)\*', r'\1<i>\2\3</i>', s)
     return s
 
 

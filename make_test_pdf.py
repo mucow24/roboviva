@@ -40,7 +40,7 @@ def main(argv):
     cue.Entry(cue.Instruction.SUMMIT, "Summit", 13.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, None),
     cue.Entry(cue.Instruction.FIRST_AID, "First Aid", 14.0, "note", cue.Modifier.NONE, 1.0, cue.Color.YELLOW, None),
     cue.Entry(cue.Instruction.NONE, "None", 15.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, None),
-    cue.Entry(cue.Instruction.NONE, "Inline *formatting* **test**", 16.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, None),
+    cue.Entry(cue.Instruction.NONE, "Inline *formatting* **test** **nested *formatting* oh my!**", 16.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, None),
     cue.Entry(cue.Instruction.NONE, "<html> escape <test> & ! @ $ # % ^ * ( ) punctuation test", 17.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, None),
     cue.Entry(cue.Instruction.CUSTOM, "Custom", 18.0, "note", cue.Modifier.NONE, 1.0, cue.Color.NONE, "CUS"),
     cue.Entry(cue.Instruction.ROUTE_END, "End", 19.0, "note", cue.Modifier.NONE, None, cue.Color.NONE, None),
