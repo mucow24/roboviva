@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-import ridewithgps
-import cue
-import tex
+from roboviva import ridewithgps
+from roboviva import cue
+import roboviva.tex
 
 class RWGPSTestCase(unittest.TestCase):
   '''Tests for Roboviva's RWGPS-facing functions'''
